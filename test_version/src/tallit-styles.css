@@ -140,13 +140,20 @@
 #tallit-configurator-section .btn {
     display: inline-block;
     padding: 0.8rem 1.5rem;
-    background: linear-gradient(135deg, var(--config-color-accent), var(--config-color-accent-dim));
-    color: #000;
+    background-color: #000 !important;
+    /* Force Black */
+    color: #fff !important;
+    /* Force White Text */
     font-weight: 600;
     border-radius: 50px;
-    border: none;
+    border: 1px solid var(--config-color-accent);
     cursor: pointer;
     text-align: center;
+    transition: all 0.2s ease;
+}
+
+#tallit-configurator-section .btn:hover {
+    background-color: #333 !important;
 }
 
 #tallit-configurator-section .builder-controls {
@@ -164,10 +171,17 @@
 #tallit-configurator-section .builder-controls button {
     flex: 1;
     padding: 0.5rem;
-    background: rgba(255, 255, 255, 0.1);
+    background-color: #000 !important;
+    /* Force Black */
     border: 1px solid var(--config-color-glass-border);
-    color: #fff;
+    color: #fff !important;
+    /* Force White Text */
     cursor: pointer;
+    transition: background 0.2s;
+}
+
+#tallit-configurator-section .builder-controls button:hover {
+    background-color: #333 !important;
 }
 
 #tallit-configurator-section .btn-add-stripe {
@@ -378,4 +392,111 @@
 .walkthrough-tooltip.visible {
     opacity: 1;
     animation: bounceHint 2s infinite;
+}
+
+/* Horizontal Gallery */
+.horizontal-gallery {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    /* Hide scrollbar typically */
+    scrollbar-width: thin;
+    scrollbar-color: var(--config-color-accent-dim) transparent;
+}
+
+.tzitzit-card {
+    min-width: 180px;
+    background: #FFFFFF;
+    /* White Background */
+    border: 1px solid var(--config-color-glass-border);
+    border-radius: 8px;
+    padding: 0.8rem;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+    color: #000;
+    /* Black Text */
+}
+
+.tzitzit-card:hover {
+    background: #FFFAF0;
+    /* Slight off-white hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+.tzitzit-card.selected {
+    border: 3px solid var(--config-color-accent);
+    /* background: #FFFFFF; Keep white */
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5);
+    /* Gold glow */
+}
+
+.tzitzit-card img {
+    width: 100%;
+    height: 120px;
+    object-fit: contain;
+    margin-bottom: 0.5rem;
+    /* filter: invert(1); REMOVED - Images are black lines, background is white. Perfect. */
+}
+
+.tzitzit-card h4 {
+    margin: 0;
+    font-size: 1rem;
+    color: #000;
+    /* Black Title */
+    font-weight: bold;
+}
+
+.tzitzit-card p {
+    margin: 0.2rem 0 0;
+    font-size: 0.75rem;
+    color: #444;
+    /* Dark Grey Description */
+    line-height: 1.2;
+}
+
+/* Lightbox Styles */
+.lightbox-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(5px);
+    z-index: 10000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.lightbox-overlay.visible {
+    opacity: 1;
+}
+
+.lightbox-content {
+    background: #1a1816;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--config-color-accent);
+    max-width: 90%;
+    max-height: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes scaleUp {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }

@@ -29,11 +29,16 @@
       "id": "1769882303782",
       "name": "Rule Test",
       "joinDate": "2026-01-31T17:58:23.782Z"
+    },
+    {
+      "id": "1769883470427",
+      "name": "Flow Test",
+      "joinDate": "2026-01-31T18:17:50.427Z"
     }
   ],
   "designs": [],
   "stats": {
-    "totalUsers": 6,
+    "totalUsers": 7,
     "totalDesigns": 0
   }
 }
