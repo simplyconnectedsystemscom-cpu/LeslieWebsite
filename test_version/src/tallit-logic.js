@@ -1,0 +1,1064 @@
+
+// Tallit Configurator Logic - Full Integration
+// Based on Tallit3D/src/main.js (Last Committed Version)
+// Adapted for Scoped Integration with Node.js Backend
+
+const CONFIG = {
+    apiBase: 'http://localhost:3000/api'
+};
+
+// ---------------- Constants ----------------
+
+const TC_COLORS = [
+    // Red
+    { name: 'Rouge (CH5116)', hex: '#D70000' },
+    { name: 'Brique (C972)', hex: '#CB4154' },
+    { name: 'Bourgogne (C978)', hex: '#800020' },
+    { name: 'Wine (CH8264)', hex: '#722F37' },
+    { name: 'Framboise (CH5193)', hex: '#E30B5C' },
+
+    // Orange
+    { name: 'Orange Brulé (CH8265)', hex: '#CC5500' },
+    { name: 'Honey (CH5212)', hex: '#EB9605' },
+    { name: 'Amber (C995)', hex: '#FFBF00' },
+
+    // Yellow
+    { name: 'Gold (C918)', hex: '#FFD700' },
+    { name: 'Vieil Or (CH1418)', hex: '#CFB53B' },
+
+    // Green
+    { name: 'Lime (CH5139)', hex: '#32CD32' },
+    { name: 'Sage (C930)', hex: '#9DC183' },
+    { name: 'Cactus (C953)', hex: '#5b6f55' },
+    { name: 'Sapin (CH5536)', hex: '#097969' },
+    { name: 'Olive foncé (C936)', hex: '#556B2F' },
+    { name: 'Forest (C905)', hex: '#0b6623' },
+
+    // Blue
+    { name: 'Turquoise (CH1510)', hex: '#40E0D0' },
+    { name: 'Jeans (CH4271)', hex: '#5dade2' },
+    { name: 'Periwinkle (CH5067)', hex: '#CCCCFF' },
+    { name: 'Bleu (CH4272)', hex: '#0000FF' },
+    { name: 'Bleu Cobalt (CH4274)', hex: '#0047AB' },
+    { name: 'Royal (CH963)', hex: '#2b4f81' },
+    { name: 'Peacock (CH4616)', hex: '#007090' },
+    { name: 'Marine (CH1425)', hex: '#000080' },
+
+    // Indigo / Violet
+    { name: 'Mauve (CH5153)', hex: '#E0B0FF' },
+    { name: 'Plum (CH1732)', hex: '#DDA0DD' },
+    { name: 'Fuschia (CH5169)', hex: '#FF00FF' },
+
+    // Browns
+    { name: 'Chocolat (C964)', hex: '#7B3F00' },
+
+    // Greys / Black (Neutrals)
+    { name: 'Stone (CH8115)', hex: '#888c8d' },
+    { name: 'Gris foncé (CH271)', hex: '#555555' },
+    { name: 'Charcoal (CH4275)', hex: '#36454F' },
+    { name: 'Noir (CH83)', hex: '#111111' }
+];
+
+const TC_TZITZIT_TYPES = [
+    { id: 'none', name: 'No Tzitzit', description: 'Do not attach strings', image: null },
+    { id: 'white', name: 'Standard White', description: 'All white strings', image: '/images/ashkenazi.png' },
+    { id: 'techelet', name: 'Techelet (Blue)', description: 'White with blue thread', image: '/images/ashkenazi.png' },
+    { id: 'ashkenazi', name: 'Ashkenazi Knot', description: '7-8-11-13 windings', image: '/images/ashkenazi.png' },
+    { id: 'sephardic', name: 'Sephardic Knot', description: '10-5-6-5 windings', image: '/images/sephardic.png' },
+    { id: 'chabad', name: 'Chabad (Ari Zal)', description: 'Chulya groups 3-3-3', image: '/images/chabad.png' },
+    { id: 'yemenite', name: 'Yemenite (Rambam)', description: 'Specialized 7-13 chulyot', image: '/images/yemenite.png' },
+    { id: 'vilna', name: 'Vilna Gaon', description: 'Gra method 13 windings', image: '/images/vilna.png' }
+];
+
+const TC_ATARA_STYLES = [
+    { id: 'none', name: 'No Atara', text: '', meaning: 'Simple fabric band' },
+    { id: 'blessing', name: 'The Blessing (L\'hit\'atef)', text: '...אֲשֶׁר קִדְּשָׁנוּ בְּמִצְוֹתָיו וְצִוָּנוּ לְהִתְעַטֵּף בַּצִּיצִת', meaning: '...Who commanded us to wrap ourselves in Tzitzit' },
+    { id: 'shiviti', name: 'Shiviti Hashem', text: 'שִׁוִּיתִי יְהוָה לְנֶגְדִּי תָמִיד', meaning: 'I have set the Lord always before me (Psalm 16:8)' },
+    { id: 'etz_chaim', name: 'Etz Chaim (Tree of Life)', text: 'עֵץ־חַיִּים הִיא לַמַּחֲזִיקִים בָּהּ', meaning: 'It is a Tree of Life to those who hold fast to it (Proverbs 3:18)' },
+    { id: 'jerusalem', name: 'Jerusalem Skyline', text: 'אִם־אֶשְׁכָּחֵךְ יְרוּשָׁלָ‍ִם', meaning: 'If I forget thee, O Jerusalem... (Psalm 137:5)' }
+];
+
+// ---------------- State ----------------
+
+let tcState = {
+    // Integration State
+    userId: null,
+    userName: null,
+
+    // App State
+    baseColor: TC_COLORS[1], // Default Blanchi
+    stripePattern: [],
+    activeStripeId: null,
+    tzitzitType: TC_TZITZIT_TYPES[0],
+    ataraStyle: TC_ATARA_STYLES[1], // Default to Blessing
+    isBackView: false
+};
+
+// ---------------- DOM Elements ----------------
+let tcCanvas, tcCtx, tcZoneUsage, tcStripeStack, tcColorPicker, tcAtaraSelector, tcTzitzitSelector, tcDesignSummary;
+
+// ---------------- Initialization ----------------
+
+export function initTallitConfigurator() {
+    console.log("Initializing Tallit Configurator (Integration Mode)...");
+
+    // Bind DOM
+    tcCanvas = document.getElementById('tc-canvas');
+    if (!tcCanvas) return console.error('Canvas not found');
+    tcCtx = tcCanvas.getContext('2d');
+
+    tcZoneUsage = document.getElementById('tc-zoneUsage');
+    tcStripeStack = document.getElementById('tc-stripeStack');
+    tcColorPicker = document.getElementById('tc-stripeColorPicker');
+    tcAtaraSelector = document.getElementById('tc-ataraSelector');
+    tcTzitzitSelector = document.getElementById('tc-tzitzitSelector');
+    tcDesignSummary = document.getElementById('tc-designSummary');
+
+    // Create Tooltip
+    createNameTooltip();
+    window.addEventListener('scroll', handleScrollForTooltip);
+
+    // Initial Render
+    renderTCControls();
+    renderTCCanvas();
+    updateTCSummary();
+
+    // Attach Listeners
+    attachIntegrationListeners();
+}
+
+// ---------------- Rendering Logic (Full Fidelity) ----------------
+
+function renderTCCanvas() {
+    const w = tcCanvas.width;
+    const h = tcCanvas.height;
+
+    // Clear
+    tcCtx.clearRect(0, 0, w, h);
+
+    const padding = 50;
+    const tWidth = w - (padding * 2);
+    const tHeight = h - (padding * 2);
+    const startX = padding;
+    const startY = padding;
+
+    if (tWidth <= 0 || tHeight <= 0) return;
+
+    // 1. Draw Tallit Base
+    const baseHex = (tcState.baseColor && tcState.baseColor.hex) ? tcState.baseColor.hex : '#FFFFFF';
+
+    tcCtx.save();
+    tcCtx.fillStyle = baseHex;
+    tcCtx.shadowColor = 'rgba(0,0,0,0.3)';
+    tcCtx.shadowBlur = 20;
+    tcCtx.shadowOffsetX = 5;
+    tcCtx.shadowOffsetY = 10;
+    tcCtx.fillRect(startX, startY, tWidth, tHeight);
+    tcCtx.restore();
+
+    // 1b. Texture
+    drawTexture(startX, startY, tWidth, tHeight);
+
+    // 2. Draw Stripes
+    drawStripePattern(startX, startY, tWidth, tHeight);
+
+    // 3/4. Front vs Back Features
+    if (!tcState.isBackView) {
+        // FRONT VIEW
+        drawAtara(startX, startY, tWidth);
+        drawTzitzitColors(startX, startY, tWidth, tHeight);
+    } else {
+        // BACK VIEW
+        drawKanafim(startX, startY, tWidth, tHeight);
+    }
+
+    // 5. Draw Fringes (Side twisted strands)
+    drawFringes(startX, startY, tWidth, tHeight);
+}
+
+// --- Drawing Helpers ---
+
+function drawTexture(x, y, w, h) {
+    tcCtx.fillStyle = 'rgba(0,0,0,0.03)';
+    for (let i = 0; i < w; i += 2) tcCtx.fillRect(x + i, y, 1, h);
+    for (let j = 0; j < h; j += 2) tcCtx.fillRect(x, y + j, w, 1);
+}
+
+function drawStripePattern(x, y, w, h) {
+    const TALLIT_LENGTH = 60;
+    const STRIPE_START_OFFSET = 5;
+    const ppi = w / TALLIT_LENGTH;
+
+    const startPixelLeft = x + (STRIPE_START_OFFSET * ppi);
+    const startPixelRight = x + w - (STRIPE_START_OFFSET * ppi);
+
+    // Left Side
+    let currentPos = startPixelLeft;
+    tcState.stripePattern.forEach(item => {
+        const widthPx = item.width * ppi;
+        if (item.type === 'stripe') {
+            tcCtx.fillStyle = item.color.hex;
+            tcCtx.fillRect(currentPos, y, widthPx, h);
+        }
+        currentPos += widthPx;
+    });
+
+    // Right Side (Mirrored)
+    let currentPosRight = startPixelRight;
+    tcState.stripePattern.forEach(item => {
+        const widthPx = item.width * ppi;
+        currentPosRight -= widthPx;
+        if (item.type === 'stripe') {
+            tcCtx.fillStyle = item.color.hex;
+            tcCtx.fillRect(currentPosRight, y, widthPx, h);
+        }
+    });
+}
+
+function drawAtara(x, y, w) {
+    if (tcState.ataraStyle.id === 'none') return;
+
+    const ataraWidth = w * 0.4;
+    const ataraHeight = 40;
+    const ataraX = x + (w / 2) - (ataraWidth / 2);
+    const style = tcState.ataraStyle;
+
+    // Geometry
+    const ptSize = 15;
+
+    tcCtx.beginPath();
+    tcCtx.moveTo(ataraX, y + ataraHeight / 2);
+    tcCtx.lineTo(ataraX + ptSize, y);
+    tcCtx.lineTo(ataraX + ataraWidth - ptSize, y);
+    tcCtx.lineTo(ataraX + ataraWidth, y + ataraHeight / 2);
+    tcCtx.lineTo(ataraX + ataraWidth - ptSize, y + ataraHeight);
+    tcCtx.lineTo(ataraX + ptSize, y + ataraHeight);
+    tcCtx.closePath();
+
+    tcCtx.fillStyle = '#F8F9FA';
+    tcCtx.fill();
+    tcCtx.strokeStyle = '#B0B0B0';
+    tcCtx.lineWidth = 2;
+    tcCtx.stroke();
+
+    if (style.id === 'jerusalem') {
+        drawJerusalemSkyline(ataraX, y, ataraWidth, ataraHeight);
+    }
+
+    if (style.text) {
+        tcCtx.save();
+        tcCtx.fillStyle = '#222';
+        tcCtx.font = 'bold 16px serif';
+        tcCtx.textAlign = 'center';
+        tcCtx.textBaseline = 'middle';
+        tcCtx.fillText(style.text, ataraX + ataraWidth / 2, y + ataraHeight / 2);
+        tcCtx.restore();
+    }
+}
+
+function drawJerusalemSkyline(x, y, w, h) {
+    tcCtx.save();
+    tcCtx.fillStyle = 'rgba(212, 175, 55, 0.3)';
+    tcCtx.beginPath();
+    tcCtx.moveTo(x, y + h);
+    const steps = 20;
+    const stepW = w / steps;
+    for (let i = 0; i <= steps; i++) {
+        const px = x + (i * stepW);
+        const ph = (Math.sin(i * 1.5) + 1) * (h * 0.3) + 5;
+        tcCtx.lineTo(px, y + h - ph);
+    }
+    tcCtx.lineTo(x + w, y + h);
+    tcCtx.closePath();
+    tcCtx.fill();
+    tcCtx.restore();
+}
+
+// ---------------- Fringes (Edges) ----------------
+
+function drawFringes(x, y, w, h) {
+    const FRINGE_LENGTH_INCHES = 3;
+    const FRINGE_SPACING_INCHES = 1;
+    const CORNER_OFFSET_INCHES = 4.5;
+    const TALLIT_HEIGHT_INCHES = 45;
+    const ppi = h / TALLIT_HEIGHT_INCHES;
+
+    const fringeLenPx = FRINGE_LENGTH_INCHES * ppi;
+    const offsetPx = CORNER_OFFSET_INCHES * ppi;
+    const spacingPx = FRINGE_SPACING_INCHES * ppi;
+
+    const startFringeY = y + offsetPx;
+    const endFringeY = y + h - offsetPx;
+
+    function drawTwistedStrand(sx, sy, ex, ey) {
+        // Shadow
+        tcCtx.beginPath(); tcCtx.moveTo(sx, sy); tcCtx.lineTo(ex, ey);
+        tcCtx.strokeStyle = '#000000'; tcCtx.lineWidth = 5; tcCtx.stroke();
+
+        // Body
+        tcCtx.beginPath(); tcCtx.moveTo(sx, sy); tcCtx.lineTo(ex, ey);
+        tcCtx.strokeStyle = '#FFFFFF'; tcCtx.lineWidth = 3; tcCtx.stroke();
+
+        // Texture
+        const dx = ex - sx; const dy = ey - sy;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx);
+        const twistSpacing = 10;
+
+        tcCtx.save();
+        tcCtx.translate(sx, sy);
+        tcCtx.rotate(angle);
+        tcCtx.beginPath(); tcCtx.strokeStyle = '#000000'; tcCtx.lineWidth = 1;
+
+        for (let i = 2; i < len - 2; i += twistSpacing) {
+            tcCtx.moveTo(i, -1.5); tcCtx.lineTo(i + 2, 1.5);
+        }
+        tcCtx.stroke();
+        tcCtx.restore();
+    }
+
+    for (let fy = startFringeY; fy <= endFringeY; fy += spacingPx) {
+        drawTwistedStrand(x, fy, x - fringeLenPx, fy); // Left
+        drawTwistedStrand(x + w, fy, x + w + fringeLenPx, fy); // Right
+    }
+}
+
+// ---------------- Tzitzit (Corners) ----------------
+
+function drawTzitzitColors(x, y, w, h) {
+    const stringColor = tcState.tzitzitType.id === 'techelet' ? '#1a4a8a' : '#EFEFEF';
+    const secondaryColor = '#EFEFEF';
+
+    const corners = [
+        { x: x + 10, y: y + h - 10 },
+        { x: x + w - 10, y: y + h - 10 },
+        { x: x + 10, y: y + 10 },
+        { x: x + w - 10, y: y + 10 }
+    ];
+
+    corners.forEach(corner => {
+        // Draw Hole Area
+        tcCtx.beginPath();
+        tcCtx.strokeStyle = '#ddd';
+        tcCtx.arc(corner.x, corner.y, 4, 0, 2 * Math.PI);
+        tcCtx.stroke();
+        tcCtx.fillStyle = '#111'; tcCtx.fill();
+
+        // Now delegating to the specialized drawers even in front view for fidelity
+        // Map to specific drawing functions (re-using logic from Back View but positioned at corner)
+        drawSingleTzitzitDetailed(corner.x, corner.y);
+    });
+}
+
+function drawSingleTzitzitDetailed(x, y) {
+    const id = tcState.tzitzitType.id;
+    if (id === 'none') return;
+
+    // Route to logic
+    if (id === 'ashkenazi') drawAshkenaziTzitzit(x, y);
+    else if (id === 'sephardic') drawSephardicTzitzit(x, y);
+    else if (id === 'techelet') drawAshkenaziTzitzit(x, y, true);
+    else if (id === 'chabad') drawChabadTzitzit(x, y);
+    else if (id === 'yemenite') drawYemeniteTzitzit(x, y);
+    else if (id === 'vilna') drawAshkenaziTzitzit(x, y); // Vilna approx
+    else drawAshkenaziTzitzit(x, y); // standard
+}
+
+function drawKanafim(x, y, w, h) {
+    const TALLIT_HEIGHT_INCHES = 45;
+    const ppi = h / TALLIT_HEIGHT_INCHES;
+    const KANAF_SIZE_INCHES = 4.5;
+    const size = KANAF_SIZE_INCHES * ppi;
+
+    const corners = [
+        { x: x, y: y },
+        { x: x + w - size, y: y },
+        { x: x, y: y + h - size },
+        { x: x + w - size, y: y + h - size }
+    ];
+
+    corners.forEach(corner => {
+        // Patch
+        tcCtx.fillStyle = '#FFFFFF'; tcCtx.shadowColor = 'rgba(0,0,0,0.1)'; tcCtx.shadowBlur = 5;
+        tcCtx.fillRect(corner.x, corner.y, size, size);
+        tcCtx.shadowBlur = 0;
+        tcCtx.strokeStyle = '#E0E0E0'; tcCtx.strokeRect(corner.x, corner.y, size, size);
+
+        // Holes
+        const offset1 = 20; const offset2 = 45;
+        let px = (corner.x === x) ? x + offset1 : x + w - offset1;
+        let py = (corner.y === y) ? y + offset1 : y + h - offset1;
+        let px2 = (corner.x === x) ? x + offset2 : x + w - offset2;
+        let py2 = (corner.y === y) ? y + offset1 : y + h - offset1;
+
+        // Draw Holes
+        [px, px2].forEach((hX, i) => {
+            const hY = (i === 0) ? py : py2;
+            tcCtx.beginPath(); tcCtx.arc(hX, hY, 4, 0, 2 * Math.PI);
+            tcCtx.fillStyle = '#333'; tcCtx.fill();
+        });
+
+        // Draw Tzitzit from holes (Back Viwe)
+        drawTzitzitFromHoles(px, py, px2, py2);
+    });
+}
+
+function drawTzitzitFromHoles(x, y, x2, y2) {
+    // Bridge
+    tcCtx.beginPath(); tcCtx.strokeStyle = '#DDD'; tcCtx.lineWidth = 2;
+    tcCtx.moveTo(x, y); tcCtx.lineTo(x2, y2); tcCtx.stroke();
+
+    // Hanging part uses same logic
+    drawSingleTzitzitDetailed(x, y);
+}
+
+
+// --- Knot Drawers ---
+
+function drawAshkenaziTzitzit(x, y, hasBlue = false) {
+    const knotSize = 4;
+    let currentY = y;
+    const mainColor = '#FDFDFD';
+    const blueColor = '#1a4a8a';
+
+    drawLooseStrings(x, y + 45, 80, hasBlue);
+
+    const pattern = [7, 8, 11, 13];
+    drawKnot(x, currentY, knotSize, mainColor); currentY += knotSize;
+
+    pattern.forEach((count, idx) => {
+        const h = count * 0.8;
+        if (hasBlue) {
+            tcCtx.fillStyle = (idx % 2 !== 0) ? blueColor : mainColor;
+            tcCtx.fillRect(x - 2, currentY, 4, h);
+        } else {
+            tcCtx.fillStyle = mainColor; tcCtx.fillRect(x - 2, currentY, 4, h);
+            tcCtx.strokeStyle = '#E0E0E0'; tcCtx.lineWidth = 0.5;
+            for (let w = 0; w < h; w += 2) { tcCtx.beginPath(); tcCtx.moveTo(x - 2, currentY + w); tcCtx.lineTo(x + 2, currentY + w); tcCtx.stroke(); }
+        }
+        currentY += h;
+        drawKnot(x, currentY, knotSize, mainColor); currentY += knotSize;
+    });
+}
+
+function drawSephardicTzitzit(x, y) {
+    drawLooseStrings(x, y + 40, 80, false);
+    let currentY = y; const knotSize = 4;
+    const pattern = [10, 5, 6, 5];
+    drawKnot(x, currentY, knotSize, '#FFF'); currentY += knotSize;
+
+    pattern.forEach(count => {
+        const h = count * 0.8;
+        tcCtx.fillStyle = '#FFF'; tcCtx.fillRect(x - 2, currentY, 4, h);
+        tcCtx.strokeStyle = '#DDD'; tcCtx.lineWidth = 1;
+        for (let w = 0; w < h; w += 3) { tcCtx.beginPath(); tcCtx.moveTo(x - 2, currentY + w); tcCtx.lineTo(x + 2, currentY + w + 2); tcCtx.stroke(); }
+        currentY += h;
+        drawKnot(x, currentY, knotSize, '#FFF'); currentY += knotSize;
+    });
+}
+
+function drawChabadTzitzit(x, y) {
+    drawLooseStrings(x, y + 40, 80, false);
+    let currentY = y; const knotSize = 4;
+    drawKnot(x, currentY, knotSize, '#FFF'); currentY += knotSize;
+    for (let i = 0; i < 4; i++) {
+        const h = 15;
+        tcCtx.fillStyle = '#FFF'; tcCtx.fillRect(x - 2, currentY, 4, h);
+        tcCtx.strokeStyle = '#CCC';
+        for (let k = 1; k < 3; k++) { let ly = currentY + (h * (k / 3)); tcCtx.beginPath(); tcCtx.moveTo(x - 2, ly); tcCtx.lineTo(x + 2, ly); tcCtx.stroke(); }
+        currentY += h;
+        drawKnot(x, currentY, knotSize, '#FFF'); currentY += knotSize;
+    }
+}
+
+function drawYemeniteTzitzit(x, y) {
+    drawLooseStrings(x, y + 50, 70, false);
+    let currentY = y;
+    for (let i = 0; i < 7; i++) {
+        tcCtx.fillStyle = '#FFF'; tcCtx.fillRect(x - 3, currentY, 6, 6);
+        tcCtx.strokeStyle = '#BBB'; tcCtx.strokeRect(x - 3, currentY, 6, 6);
+        currentY += 8;
+    }
+}
+
+function drawKnot(x, y, size, color) {
+    tcCtx.fillStyle = color; tcCtx.beginPath();
+    tcCtx.arc(x, y + size / 2, size / 1.5, 0, Math.PI * 2);
+    tcCtx.fill(); tcCtx.strokeStyle = '#CCC'; tcCtx.stroke();
+}
+
+function drawLooseStrings(x, y, length, hasBlue) {
+    const spread = 8;
+    const stringColor = '#F0F0F0'; const blueString = '#1a4a8a';
+    for (let i = 0; i < 8; i++) {
+        tcCtx.beginPath();
+        const isBlue = hasBlue && (i === 0 || i === 7);
+        tcCtx.strokeStyle = isBlue ? blueString : stringColor;
+        tcCtx.lineWidth = 1.5;
+        const randomOffset = (Math.random() - 0.5) * 5;
+        const endX = x + (i - 3.5) * spread * 0.5 + randomOffset;
+        tcCtx.moveTo(x, y);
+        tcCtx.bezierCurveTo(x, y + length / 2, endX, y + length * 0.8, endX, y + length);
+        tcCtx.stroke();
+    }
+}
+
+// ---------------- UI & Controls ----------------
+
+function renderTCControls() {
+    // 1. Stripes
+    if (tcState.stripePattern.length === 0) {
+        tcStripeStack.innerHTML = '<div class="empty-state">No stripes added yet.</div>';
+    } else {
+        tcStripeStack.innerHTML = tcState.stripePattern.map(item => `
+            <div class="stripe-item ${item.id === tcState.activeStripeId ? 'active' : ''}" 
+                 data-id="${item.id}"
+                 tabindex="0" 
+                 role="button" 
+                 aria-label="Select Stripe ${item.width} inch">
+                <div>${item.width}" ${item.type}</div>
+                <div class="delete-btn" data-delete-id="${item.id}" title="Delete Stripe" tabindex="0" role="button">✕</div>
+            </div>
+        `).join('');
+    }
+
+    // 2. Zone Usage
+    const usage = tcState.stripePattern.reduce((acc, i) => acc + i.width, 0);
+    tcZoneUsage.innerText = `${usage.toFixed(2)}" / 12"`;
+
+    // 3. Colors
+    tcColorPicker.innerHTML = TC_COLORS.map(c => `
+        <div class="color-swatch" style="background:${c.hex}" data-name="${c.name}"></div>
+    `).join('');
+
+    // 4. Atara
+    tcAtaraSelector.innerHTML = TC_ATARA_STYLES.map(s => `
+        <div class="tzitzit-option ${tcState.ataraStyle.id === s.id ? 'selected' : ''}" data-id="${s.id}">
+            <b>${s.name}</b><br><small>${s.meaning}</small>
+        </div>
+    `).join('');
+
+    // 5. Tzitzit
+    tcTzitzitSelector.innerHTML = TC_TZITZIT_TYPES.map(t => `
+        <div class="tzitzit-option ${tcState.tzitzitType.id === t.id ? 'selected' : ''}" data-id="${t.id}">
+            <b>${t.name}</b>
+        </div>
+    `).join('');
+
+    updateBuilderVisibility();
+    reattachControlListeners();
+
+    // Walkthrough: Show Edit Hint on first stripe
+    if (tcState.stripePattern.length === 1 && !tcState.hasShownEditHint) {
+        // Use timeout to ensure DOM is painted and layout is settled for positioning
+        setTimeout(() => {
+            showStripeEditPrompt();
+            tcState.hasShownEditHint = true;
+        }, 100);
+    }
+
+    // Walkthrough: Continue Hint on second stripe (Disabled for now)
+    /*
+    if (tcState.stripePattern.length === 2 && !tcState.hasShownContinueHint) {
+        setTimeout(() => {
+            showContinuePrompt();
+            tcState.hasShownContinueHint = true;
+        }, 100);
+    }
+    */
+}
+
+function updateBuilderVisibility() {
+    const rowStripes = document.getElementById('row-stripes');
+    const rowSpaces = document.getElementById('row-spaces');
+    const doneBtn = document.getElementById('btn-done-selecting');
+
+    if (!rowStripes || !rowSpaces) return;
+
+    const lastItem = tcState.stripePattern.length > 0 ? tcState.stripePattern[tcState.stripePattern.length - 1] : null;
+
+    // Logic: 
+    // - Initial (No items): Show Stripes, Hide Spaces
+    // - Last was Stripe: Hide Stripes, Show Spaces
+    // - Last was Space: Show Stripes, Hide Spaces
+
+    let isPatternValid = false;
+
+    if (!lastItem) {
+        rowStripes.style.display = 'flex';
+        rowStripes.style.opacity = '1';
+        rowStripes.style.pointerEvents = 'auto';
+        rowSpaces.style.display = 'none';
+
+    } else if (lastItem.type === 'stripe') {
+        rowStripes.style.display = 'none';
+
+        rowSpaces.style.display = 'flex';
+        rowSpaces.style.opacity = '1';
+        rowSpaces.style.pointerEvents = 'auto';
+
+        isPatternValid = true; // Valid if ends in stripe
+
+    } else { // Last was space
+        rowStripes.style.display = 'flex';
+        rowStripes.style.opacity = '1';
+        rowStripes.style.pointerEvents = 'auto';
+        rowSpaces.style.display = 'none';
+    }
+
+    // Done Button State
+    if (doneBtn) {
+        if (isPatternValid) {
+            doneBtn.disabled = false;
+            doneBtn.style.opacity = '1';
+            doneBtn.style.pointerEvents = 'auto';
+            doneBtn.style.cursor = 'pointer';
+            doneBtn.style.borderColor = '#d4af37';
+            doneBtn.style.color = '#d4af37';
+        } else {
+            doneBtn.disabled = true;
+            doneBtn.style.opacity = '0.3';
+            doneBtn.style.pointerEvents = 'none';
+            doneBtn.style.cursor = 'not-allowed';
+            doneBtn.style.borderColor = '#666';
+            doneBtn.style.color = '#666';
+        }
+
+        // Listener (Attach once ideally, or re-attach safely)
+        doneBtn.onclick = () => {
+            // Redundant check since disabled, but safe
+            const finalItem = tcState.stripePattern.length > 0 ? tcState.stripePattern[tcState.stripePattern.length - 1] : null;
+            if (finalItem && finalItem.type === 'stripe') {
+                alert("Great! Your pattern selection is valid. You can now save or continue customizing.");
+            }
+        };
+    }
+}
+
+function calculateTCWeavingPattern() {
+    const TALLIT_WIDTH_INCHES = 60;
+    const TALLIT_HEIGHT_INCHES = 45;
+
+    const totalStripesWidth = tcState.stripePattern.reduce((acc, item) => acc + item.width, 0);
+
+    let totalThreads = 0;
+    tcState.stripePattern.forEach(item => {
+        // 1 thread = 3/8" / 4 = 0.09375" (approx logic from main.js)
+        const t = item.threads || Math.round(item.width / 0.09375);
+        totalThreads += t;
+    });
+
+    return {
+        width: TALLIT_WIDTH_INCHES,
+        height: TALLIT_HEIGHT_INCHES,
+        totalPatternWidth: totalStripesWidth.toFixed(2),
+        threadCount: `${totalThreads} Threads`
+    };
+}
+
+function getTCThreadCountsByColor() {
+    const colorCounts = new Map();
+    tcState.stripePattern.forEach(item => {
+        if (item.type === 'stripe') {
+            const colorName = item.color.name;
+            const t = item.threads || Math.round(item.width / 0.09375);
+
+            if (!colorCounts.has(colorName)) {
+                colorCounts.set(colorName, { color: item.color, count: 0 });
+            }
+            colorCounts.get(colorName).count += t;
+        }
+    });
+    return Array.from(colorCounts.values());
+}
+
+function updateTCSummary() {
+    if (!tcDesignSummary) return;
+
+    const weavingData = calculateTCWeavingPattern();
+    const threadCounts = getTCThreadCountsByColor();
+
+    let colorsHtml = '';
+    if (threadCounts.length > 0) {
+        colorsHtml = `
+        <div style="margin-top: 0.5rem;">
+          <strong>Thread Counts by Color:</strong>
+          <div style="margin-top: 0.3rem; display: flex; flex-direction: column; gap: 0.3rem;">
+            ${threadCounts.map(item => `
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <div style="width: 14px; height: 14px; background-color: ${item.color.hex}; border: 1px solid #666; border-radius: 50%;"></div>
+                <small style="opacity: 0.9;">${item.color.name} — <strong>${item.count} Threads</strong></small>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    } else {
+        colorsHtml = `<small style="opacity: 0.5; display: block; margin-top: 0.5rem;">No stripes added yet.</small>`;
+    }
+
+    tcDesignSummary.innerHTML = `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div>
+              <strong>Base:</strong> ${tcState.baseColor.name} <br>
+              <strong>Style:</strong> ${tcState.tzitzitType.name} <br>
+              <strong>Atara:</strong> ${tcState.ataraStyle.name} <br>
+              ${tcState.ataraStyle.id !== 'none' ? `<small style="opacity: 0.7; font-style: italic;">${tcState.ataraStyle.meaning}</small><br>` : ''}
+              
+              <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 0.5rem 0;">
+              <strong>Proportions:</strong> <br>
+              <small>Landscape (${weavingData.width}" x ${weavingData.height}")</small><br>
+              <small>Pattern Width: ${weavingData.totalPatternWidth}"</small><br>
+            </div>
+            <div>
+               ${colorsHtml}
+               <div style="margin-top: 1rem;">
+                  <strong>Total Threads:</strong> <br>
+                  <small>${weavingData.threadCount}</small>
+               </div>
+            </div>
+          </div>
+      `;
+}
+
+function reattachControlListeners() {
+    // Stripe Selection
+    document.querySelectorAll('#tc-stripeStack .stripe-item').forEach(el => {
+        const handler = (e) => {
+            // Ignore if clicking the delete button explicitly
+            if (e.target.classList.contains('delete-btn')) return;
+            tcState.activeStripeId = parseFloat(el.dataset.id);
+            renderTCControls();
+        };
+
+        el.onclick = handler;
+        el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handler(e);
+            }
+        });
+    });
+
+    // Delete
+    document.querySelectorAll('[data-delete-id]').forEach(el => {
+        const handler = (e) => {
+            e.stopPropagation(); // Stop bubbling to item select
+            const id = parseFloat(el.dataset.deleteId);
+            tcState.stripePattern = tcState.stripePattern.filter(s => s.id !== id);
+            renderTCControls();
+            renderTCCanvas();
+        };
+
+        el.onclick = handler;
+        el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handler(e);
+            }
+        });
+    });
+    // Color
+    document.querySelectorAll('.color-swatch').forEach(el => {
+        el.onclick = () => {
+            const colorName = el.dataset.name;
+            const colorObj = TC_COLORS.find(c => c.name === colorName);
+            if (tcState.activeStripeId) {
+                const stripe = tcState.stripePattern.find(s => s.id === tcState.activeStripeId);
+                if (stripe && stripe.type === 'stripe') {
+                    stripe.color = colorObj;
+                    renderTCCanvas();
+                }
+            }
+        };
+    });
+    // Atara
+    document.querySelectorAll('#tc-ataraSelector .tzitzit-option').forEach(el => {
+        el.onclick = () => {
+            tcState.ataraStyle = TC_ATARA_STYLES.find(s => s.id === el.dataset.id);
+            renderTCControls(); renderTCCanvas();
+        };
+    });
+    // Tzitzit
+    document.querySelectorAll('#tc-tzitzitSelector .tzitzit-option').forEach(el => {
+        el.onclick = () => {
+            tcState.tzitzitType = TC_TZITZIT_TYPES.find(t => t.id === el.dataset.id);
+            renderTCControls(); renderTCCanvas();
+        };
+    });
+}
+
+// ---------------- Integration Logic (Tooltip & API) ----------------
+
+function createNameTooltip() {
+    if (document.getElementById('namePathPrompt')) return;
+    const tooltip = document.createElement('div');
+    tooltip.id = 'namePathPrompt'; tooltip.innerText = 'Enter Name';
+    const input = document.getElementById('tc-customerName');
+    if (input && input.parentElement) {
+        input.parentElement.style.position = 'relative';
+        input.parentElement.appendChild(tooltip);
+        tooltip.style.top = '120%'; tooltip.style.left = '0';
+    }
+}
+
+let hasShownTooltip = false;
+function handleScrollForTooltip() {
+    if (hasShownTooltip || tcState.userName) return;
+    const input = document.getElementById('tc-customerName');
+    if (!input) return;
+    const rect = input.getBoundingClientRect();
+    if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
+        document.getElementById('namePathPrompt')?.classList.add('visible');
+        hasShownTooltip = true;
+    }
+}
+
+function dismissTooltip() {
+    document.getElementById('namePathPrompt')?.classList.remove('visible');
+}
+
+function attachIntegrationListeners() {
+    // Add Stripe Buttons
+    document.querySelectorAll('.btn-add-stripe').forEach(btn => {
+        btn.onclick = () => addStripeItem('stripe', parseFloat(btn.dataset.size));
+    });
+    document.querySelectorAll('.btn-add-space').forEach(btn => {
+        btn.onclick = () => addStripeItem('space', parseFloat(btn.dataset.size));
+    });
+
+    // Flip View
+    const flipBtn = document.getElementById('tc-flipViewBtn');
+    if (flipBtn) {
+        flipBtn.onclick = () => {
+            tcState.isBackView = !tcState.isBackView;
+            flipBtn.innerText = tcState.isBackView ? "View Front" : "View Back";
+            renderTCCanvas();
+        };
+    }
+
+    // Save
+    const saveBtn = document.getElementById('tc-saveBtn');
+    if (saveBtn) saveBtn.onclick = saveCurrentDesign;
+
+    // Login/Name
+    const nameInput = document.getElementById('tc-customerName');
+    if (nameInput) {
+        nameInput.addEventListener('input', dismissTooltip);
+
+        // Handle Enter Key
+        nameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                nameInput.blur(); // Triggers the onblur logic below
+            }
+        });
+
+        nameInput.onblur = () => {
+            if (nameInput.value && nameInput.value !== tcState.userName) {
+                loginUser(nameInput.value);
+                // Trigger next step in walkthrough
+                setTimeout(showStripePrompt, 500);
+            }
+        };
+    }
+}
+
+function showStripePrompt() {
+    if (document.getElementById('stripeBuilderPrompt')) return;
+    const builderControls = document.querySelector('.builder-controls');
+    if (!builderControls) return;
+
+    const tooltip = document.createElement('div');
+    tooltip.id = 'stripeBuilderPrompt';
+    tooltip.innerText = 'Now, click a button to add your first stripe!';
+    tooltip.className = 'walkthrough-tooltip'; // Re-use styling or add new
+
+    // Position it
+    builderControls.style.position = 'relative';
+    builderControls.appendChild(tooltip);
+
+    // Position ABOVE the controls
+    tooltip.style.top = '-80px'; /* Clears the buttons completely */
+    tooltip.style.left = '70%';
+    tooltip.style.transform = 'translate(-50%, -100%)';
+    tooltip.style.width = '200px'; // Ensure nice wrapping
+
+    // Add visible class after a tick for transition
+    setTimeout(() => tooltip.classList.add('visible'), 50);
+
+    // Auto-dismiss on interaction
+    const buttons = builderControls.querySelectorAll('button');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            tooltip.classList.remove('visible');
+            setTimeout(() => tooltip.remove(), 500);
+        }, { once: true });
+    });
+}
+
+function addStripeItem(type, size) {
+    const usage = tcState.stripePattern.reduce((acc, i) => acc + i.width, 0);
+    if (usage + size > 12) return alert("Zone limit reached (12 inches)");
+    const newItem = { id: Math.random(), type, width: size, color: TC_COLORS[3] }; // Default Black
+    tcState.stripePattern.push(newItem);
+    tcState.activeStripeId = newItem.id;
+    renderTCControls();
+    renderTCCanvas();
+}
+
+function showStripeEditPrompt() {
+    if (document.getElementById('stripeEditPrompt')) return;
+
+    // Target the currently active (selected) item
+    const stack = document.getElementById('tc-stripeStack');
+    const activeItem = stack ? stack.querySelector('.stripe-item.active') : null;
+
+    // Fallback to last element if no active item found (shouldn't happen on add)
+    const targetItem = activeItem || (stack ? stack.lastElementChild : null);
+
+    if (!targetItem) return;
+
+    const tooltip = document.createElement('div');
+    tooltip.id = 'stripeEditPrompt';
+    tooltip.innerText = 'Pick a Color or Delete with "x" then pick Next Space Above';
+    tooltip.className = 'walkthrough-tooltip';
+
+    // Append to body to avoid overflow clipping
+    document.body.appendChild(tooltip);
+
+    // Position it manually
+    // Position it manually
+    // Position it manually
+    const updatePosition = () => {
+        const rect = targetItem.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+        const tooltipWidth = 200;
+        const spaceOnRight = window.innerWidth - rect.right;
+
+        // Anchor TOP position to the top of the item minus gap
+        tooltip.style.top = `${rect.top + scrollTop - 12}px`;
+
+        if (spaceOnRight < tooltipWidth / 2 + 30) {
+            // Right Align + Shift Up 100%
+            tooltip.style.left = `${rect.right + scrollLeft - tooltipWidth}px`;
+            tooltip.style.transform = 'translate(0, -100%)';
+        } else {
+            // Center Align + Shift Up 100%
+            tooltip.style.left = `${rect.left + scrollLeft + (rect.width / 2)}px`;
+            tooltip.style.transform = 'translate(-50%, -100%)';
+        }
+    };
+
+    updatePosition();
+
+    // Add visible class
+    setTimeout(() => tooltip.classList.add('visible'), 50);
+
+    // Dismiss Logic
+    const dismiss = () => {
+        tooltip.classList.remove('visible');
+        setTimeout(() => tooltip.remove(), 500);
+        // Clean up listeners
+        const colorPicker = document.getElementById('tc-stripeColorPicker');
+        if (colorPicker) colorPicker.removeEventListener('click', dismiss);
+        targetItem.removeEventListener('click', dismiss);
+    };
+
+    // 1. Color Picker Click
+    const colorPicker = document.getElementById('tc-stripeColorPicker');
+    if (colorPicker) colorPicker.addEventListener('click', dismiss, { once: true });
+
+    // 2. Select/Delete on the item itself
+    targetItem.addEventListener('click', dismiss, { once: true });
+}
+
+function showContinuePrompt() {
+    if (document.getElementById('stripeContinuePrompt')) return;
+    const builderControls = document.querySelector('.builder-controls'); // Or target the add buttons container
+    if (!builderControls) return;
+
+    const tooltip = document.createElement('div');
+    tooltip.id = 'stripeContinuePrompt';
+    tooltip.className = 'walkthrough-tooltip';
+    tooltip.style.minWidth = '250px';
+
+    // Content with Button
+    tooltip.innerHTML = `
+        <div style="margin-bottom: 8px;">Continue Adding Stripes and Spaces till done with selecting stripes</div>
+        <button id="btnDismissContinue" style="
+            background: rgba(0,0,0,0.8); 
+            color: #d4af37; 
+            border: 1px solid #000; 
+            padding: 4px 12px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 0.8rem;
+            font-weight: bold;">
+            Got it
+        </button>
+    `;
+
+    // Position relative to builder controls (Buttons)
+    // We want it roughly where the "Add Stripe" prompt was
+    builderControls.style.position = 'relative';
+    builderControls.appendChild(tooltip);
+
+    // Explicitly override the default top calculation style if needed, 
+    // but the default CSS might put it at top: -xxx. 
+    // Let's force it to float above the buttons area.
+    tooltip.style.top = '-80px';
+    tooltip.style.left = '50%';
+    tooltip.style.transform = 'translateX(-50%)';
+
+    // Visible
+    setTimeout(() => tooltip.classList.add('visible'), 50);
+
+    // Dismiss Logic
+    const dismiss = () => {
+        tooltip.classList.remove('visible');
+        setTimeout(() => tooltip.remove(), 500);
+    };
+
+    // Button Click
+    tooltip.querySelector('#btnDismissContinue').addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent bubbling
+        dismiss();
+    });
+}
+
+// --- API ---
+
+async function loginUser(name) {
+    if (!name) return;
+    try {
+        const res = await fetch(`${CONFIG.apiBase}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+        const data = await res.json();
+        if (data.user) {
+            tcState.userId = data.user.id; tcState.userName = data.user.name;
+            alert(`Welcome back, ${tcState.userName}!`);
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function saveCurrentDesign() {
+    if (!tcState.userId) {
+        const name = prompt("Please enter name to save:");
+        if (name) await loginUser(name); else return;
+    }
+    const designData = { baseColor: tcState.baseColor, stripePattern: tcState.stripePattern, tzitzitType: tcState.tzitzitType, ataraStyle: tcState.ataraStyle };
+    try {
+        await fetch(`${CONFIG.apiBase}/designs`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: tcState.userId, designData }) });
+        alert("Design Saved!");
+    } catch (e) { alert("Save failed"); }
+}
+
+export async function showGlobalStats() {
+    try {
+        const res = await fetch(`${CONFIG.apiBase}/stats`);
+        const data = await res.json();
+        alert(`Total Users: ${data.totalUsers}\nDesigns: ${data.totalDesigns}\nTop Color: ${data.popularColor}\nTop Tzitzit: ${data.popularTzitzit}`);
+    } catch (e) { alert("Stats Error"); }
+}

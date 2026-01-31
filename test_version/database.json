@@ -1,0 +1,39 @@
+{
+  "users": [
+    {
+      "id": "1769879283031",
+      "name": "Steven ",
+      "joinDate": "2026-01-31T17:08:03.031Z"
+    },
+    {
+      "id": "1769879985839",
+      "name": "Le",
+      "joinDate": "2026-01-31T17:19:45.839Z"
+    },
+    {
+      "id": "1769880281122",
+      "name": "Test User",
+      "joinDate": "2026-01-31T17:24:41.122Z"
+    },
+    {
+      "id": "1769880425044",
+      "name": "Walkthrough Test",
+      "joinDate": "2026-01-31T17:27:05.044Z"
+    },
+    {
+      "id": "1769880653509",
+      "name": "Steven",
+      "joinDate": "2026-01-31T17:30:53.509Z"
+    },
+    {
+      "id": "1769882303782",
+      "name": "Rule Test",
+      "joinDate": "2026-01-31T17:58:23.782Z"
+    }
+  ],
+  "designs": [],
+  "stats": {
+    "totalUsers": 6,
+    "totalDesigns": 0
+  }
+}
