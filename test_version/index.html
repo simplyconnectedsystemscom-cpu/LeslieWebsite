@@ -169,7 +169,15 @@
           <div class="blueprint-header">
             <div class="header-left">
               <label>Customer Name:</label>
-              <input type="text" id="tc-customerName" placeholder="Enter Name to Save..." class="blueprint-input">
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <div style="display: flex; gap: 0.5rem;">
+                  <input type="text" id="tc-customerName" placeholder="Enter Name to Save..." class="blueprint-input">
+                  <button id="tc-btn-new-design" class="btn"
+                    style="padding: 0.2rem 0.8rem; font-size: 0.7rem; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1) !important; white-space: nowrap;">New
+                    Design</button>
+                </div>
+                <div id="tc-saved-designs-list" style="font-size: 0.8rem; display: none;"></div>
+              </div>
             </div>
             <div class="header-right">
               <span>Model: <strong>Landscape</strong></span>
@@ -179,28 +187,7 @@
 
           <canvas id="tc-canvas" width="800" height="600"></canvas>
 
-          <div id="tzitzit-selection-area"
-            style="display: none; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
-            <h3 style="color: #d4af37; margin-bottom: 1rem;">3. Select Tzitzit Type</h3>
-            <div id="tc-tzitzitGallery" class="horizontal-gallery"></div>
-          </div>
 
-          <!-- Step 4: Horizontal Atara Selection (Hidden initially) -->
-          <div id="atara-selection-area"
-            style="display: none; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
-            <h3 style="color: #d4af37; margin-bottom: 1rem;">4. Select Atara Style</h3>
-            <div id="tc-ataraSelector" class="horizontal-gallery"></div>
-          </div>
-
-          <!-- Step 5: Final Options (Hidden initially) -->
-          <div id="final-options-area"
-            style="display: none; margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; text-align: center;">
-            <h3 style="color: #d4af37; margin-bottom: 1rem;">Design Complete</h3>
-            <div style="display: flex; gap: 1rem; justify-content: center;">
-              <button id="tc-btn-save-design" class="btn" style="min-width: 150px;">Save Design</button>
-              <button id="tc-btn-save-download" class="btn" style="min-width: 150px;">Save & Download</button>
-            </div>
-          </div>
 
           <div class="blueprint-details">
             <h3>Weaving Instructions</h3>
@@ -229,7 +216,17 @@
 
           <div class="control-group">
             <h3>2. Build Stripes</h3>
-            <p class="usage-info" id="tc-zoneUsage">0" / 12"</p>
+            <div class="usage-stats"
+              style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem; text-align: center; font-size: 0.75rem;">
+              <div style="color: #888;">Inches Allowed</div>
+              <div style="color: #888;">Inches Selected</div>
+              <div style="color: #888;">Inches Remaining</div>
+              <div id="val-allowed" style="font-weight: bold; color: #fff;">12"</div>
+              <div id="val-selected" style="font-weight: bold; color: var(--config-color-accent);">0.00"</div>
+              <div id="val-remaining" style="font-weight: bold; color: #fff;">12.00"</div>
+            </div>
+            <!-- Old p hidden/removed -->
+            <p class="usage-info" id="tc-zoneUsage" style="display:none;"></p>
 
             <div id="tc-stripeStack"
               style="min-height: 40px; margin-bottom: 0.5rem; background: rgba(0,0,0,0.1); border-radius: 4px; padding: 0.5rem; max-height: 150px; overflow-y: auto;">
@@ -250,7 +247,7 @@
                 <button class="btn-add-space" data-size="1.5">1.5"</button>
               </div>
               <div style="margin-top: 1rem;">
-                <p style="font-size: 0.8rem;">Select Stripe Color:</p>
+                <p id="tc-colorPrompt" style="font-size: 0.8rem;">Select Stripe Color:</p>
                 <div class="color-picker" id="tc-stripeColorPicker"></div>
               </div>
 
@@ -269,7 +266,34 @@
 
 
 
+
+
         </aside>
+      </div>
+
+    </div>
+
+    <!-- Step 3: Tzitzit Selection (Extended Full Width) -->
+    <div id="tzitzit-selection-area"
+      style="display: none; width: 100%; margin: 3rem auto 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; text-align: center;">
+      <h3 style="color: #d4af37; margin-bottom: 1.5rem;">3. Select Tzitzit Type</h3>
+      <div id="tc-tzitzitGallery" class="horizontal-gallery"></div>
+    </div>
+
+    <!-- Step 4: Atara Selection (Extended Full Width) -->
+    <div id="atara-selection-area"
+      style="display: none; width: 100%; margin: 3rem auto 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; text-align: center;">
+      <h3 style="color: #d4af37; margin-bottom: 1.5rem;">4. Select Atara Style</h3>
+      <div id="tc-ataraSelector" class="horizontal-gallery"></div>
+    </div>
+
+    <!-- Step 5: Final Options (Extended Full Width) -->
+    <div id="final-options-area"
+      style="display: none; width: 100%; margin: 3rem auto 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; text-align: center;">
+      <h3 style="color: #d4af37; margin-bottom: 1rem;">Design Complete</h3>
+      <div style="display: flex; gap: 1rem; justify-content: center;">
+        <button id="tc-btn-save-design" class="btn" style="min-width: 150px;">Save Design</button>
+        <button id="tc-btn-save-download" class="btn" style="min-width: 150px;">Save & Download</button>
       </div>
     </div>
   </section>

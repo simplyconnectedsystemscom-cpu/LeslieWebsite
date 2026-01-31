@@ -11,7 +11,7 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-VWTYYG0VJM"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
 
     gtag('config', 'G-VWTYYG0VJM');
@@ -38,6 +38,7 @@
         <li><a href="#story">The Story</a></li>
         <li><a href="#video">Watch</a></li>
         <li><a href="#mission">Our Mission</a></li>
+        <li><a href="#tallit-configurator-section">Design Your Custom Tallit</a></li>
         <li><a href="#contact" class="btn" style="padding: 0.5rem 1.5rem; font-size: 0.8rem;">Contact</a></li>
       </ul>
     </div>
@@ -53,9 +54,11 @@
       <p>Autistic Master Weaver Brings Manufacturing Back to America</p>
       <div style="display: flex; gap: 1rem; justify-content: center;">
         <a href="#story" class="btn">Read the Story</a>
-        <a href="#video" class="btn"
-          style="background: transparent; border: 2px solid var(--color-accent); color: var(--color-text);">Watch
-          Film</a>
+        <a href="#video" class="btn">Watch Film</a>
+      </div>
+      <div style="margin-top: 1.5rem;">
+        <a href="#tallit-configurator-section" class="btn"
+          style="min-width: 250px; font-size: 1.1rem; padding: 1rem 2rem;">Create Your Custom Tallit</a>
       </div>
     </div>
   </header>
@@ -145,6 +148,156 @@
     </div>
   </section>
 
+  <!-- Tallit Configurator Integration -->
+  <section id="tallit-configurator-section">
+    <div class="container">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <h2 style="font-family: 'Playfair Display', serif; color: #d4af37; font-size: 2.5rem; margin-bottom: 1rem;">
+          Design Your Custom Tallit</h2>
+        <p style="font-size: 1.1rem; max-width: 700px; margin: 0 auto; color: #ccc;">
+          Welcome to our interactive Tallit Designer. Enter your name below to start saving your unique designs.
+        </p>
+        <div style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+          <strong>How to use:</strong> Select a base color, add stripes (click buttons), choose your Tzitzit and Atara,
+          and click "Save Version".
+        </div>
+      </div>
+
+      <div class="designer-container">
+        <!-- Canvas Area -->
+        <div class="canvas-area glass-panel">
+          <div class="blueprint-header">
+            <div class="header-left">
+              <label>Customer Name:</label>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <div style="display: flex; gap: 0.5rem;">
+                  <input type="text" id="tc-customerName" placeholder="Enter Name to Save..." class="blueprint-input">
+                  <button id="tc-btn-new-design" class="btn"
+                    style="padding: 0.2rem 0.8rem; font-size: 0.7rem; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1) !important; white-space: nowrap;">New
+                    Design</button>
+                </div>
+                <div id="tc-saved-designs-list" style="font-size: 0.8rem; display: none;"></div>
+              </div>
+            </div>
+            <div class="header-right">
+              <span>Model: <strong>Landscape</strong></span>
+              <span>Dimensions: <strong>60" x 45"</strong></span>
+            </div>
+          </div>
+
+          <canvas id="tc-canvas" width="800" height="600"></canvas>
+
+
+
+          <div class="blueprint-details">
+            <h3>Weaving Instructions</h3>
+            <div id="tc-designSummary" class="summary-content">
+              Configurator Active. Adjust settings to see details.
+            </div>
+          </div>
+
+          <div class="canvas-controls">
+            <button id="tc-flipViewBtn" class="btn" style="margin-right: 1rem; background: rgba(255,255,255,0.1);">Turn
+              Over (Back Side)</button>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <aside class="controls-panel glass-panel">
+          <h2>Design Tools</h2>
+
+          <div class="control-group">
+            <h3>1. Base Color</h3>
+            <p style="font-size: 0.8rem; opacity: 0.7;">Select a base color for the garment.</p>
+            <div class="static-value">
+              <span>Blanchi (CH101) - <em>Fixed for Test</em></span>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <h3>2. Build Stripes</h3>
+            <div class="usage-stats"
+              style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem; text-align: center; font-size: 0.75rem;">
+              <div style="color: #888;">Inches Allowed</div>
+              <div style="color: #888;">Inches Selected</div>
+              <div style="color: #888;">Inches Remaining</div>
+              <div id="val-allowed" style="font-weight: bold; color: #fff;">12"</div>
+              <div id="val-selected" style="font-weight: bold; color: var(--config-color-accent);">0.00"</div>
+              <div id="val-remaining" style="font-weight: bold; color: #fff;">12.00"</div>
+            </div>
+            <!-- Old p hidden/removed -->
+            <p class="usage-info" id="tc-zoneUsage" style="display:none;"></p>
+
+            <div id="tc-stripeStack"
+              style="min-height: 40px; margin-bottom: 0.5rem; background: rgba(0,0,0,0.1); border-radius: 4px; padding: 0.5rem; max-height: 150px; overflow-y: auto;">
+            </div>
+
+            <div class="builder-controls">
+              <div class="control-row" id="row-stripes">
+                <span>Stripe:</span>
+                <button class="btn-add-stripe" data-size="0.375">3/8"</button>
+                <button class="btn-add-stripe" data-size="0.75">3/4"</button>
+                <button class="btn-add-stripe" data-size="1.5">1.5"</button>
+                <button class="btn-add-stripe" data-size="2.25">2.25"</button>
+              </div>
+              <div class="control-row" id="row-spaces" style="display: none;">
+                <span>Space:</span>
+                <button class="btn-add-space" data-size="0.375">3/8"</button>
+                <button class="btn-add-space" data-size="0.75">3/4"</button>
+                <button class="btn-add-space" data-size="1.5">1.5"</button>
+              </div>
+              <div style="margin-top: 1rem;">
+                <p id="tc-colorPrompt" style="font-size: 0.8rem;">Select Stripe Color:</p>
+                <div class="color-picker" id="tc-stripeColorPicker"></div>
+              </div>
+
+              <!-- Done Selecting Button (Moved) -->
+              <div style="margin-top: 1rem; text-align: center;">
+                <button id="btn-done-selecting" class="btn"
+                  style="width: 100%; font-size: 0.8rem; background: rgba(255, 255, 255, 0.1); border: 1px solid #d4af37; color: #d4af37;">
+                  Done Selecting
+                </button>
+              </div>
+            </div>
+
+
+
+
+
+
+
+
+
+        </aside>
+      </div>
+
+    </div>
+
+    <!-- Step 3: Tzitzit Selection (Extended Full Width) -->
+    <div id="tzitzit-selection-area"
+      style="display: none; width: 100%; margin: 3rem auto 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; text-align: center;">
+      <h3 style="color: #d4af37; margin-bottom: 1.5rem;">3. Select Tzitzit Type</h3>
+      <div id="tc-tzitzitGallery" class="horizontal-gallery"></div>
+    </div>
+
+    <!-- Step 4: Atara Selection (Extended Full Width) -->
+    <div id="atara-selection-area"
+      style="display: none; width: 100%; margin: 3rem auto 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; text-align: center;">
+      <h3 style="color: #d4af37; margin-bottom: 1.5rem;">4. Select Atara Style</h3>
+      <div id="tc-ataraSelector" class="horizontal-gallery"></div>
+    </div>
+
+    <!-- Step 5: Final Options (Extended Full Width) -->
+    <div id="final-options-area"
+      style="display: none; width: 100%; margin: 3rem auto 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; text-align: center;">
+      <h3 style="color: #d4af37; margin-bottom: 1rem;">Design Complete</h3>
+      <div style="display: flex; gap: 1rem; justify-content: center;">
+        <button id="tc-btn-save-design" class="btn" style="min-width: 150px;">Save Design</button>
+        <button id="tc-btn-save-download" class="btn" style="min-width: 150px;">Save & Download</button>
+      </div>
+    </div>
+  </section>
+
   <!-- CTA Section -->
   <section id="contact" style="text-align: center;">
     <div class="container hero-content reveal">
@@ -167,10 +320,23 @@
       <div class="logo">Leslie's Weaving</div>
       <p>© 2026 Leslie's Weaving | The Material of Life</p>
       <p><small>Designed with Care for the Community</small></p>
+      <p><a href="#" onclick="window.showGlobalStats(); return false;"
+          style="color: #666; text-decoration: none; font-size: 0.8rem;">View Configurator Stats</a></p>
     </div>
   </footer>
 
   <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    import '/src/tallit-styles.css';
+    import { initTallitConfigurator, showGlobalStats } from '/src/tallit-logic.js';
+
+    window.showGlobalStats = showGlobalStats;
+
+    // Defer init slightly to ensure DOM is ready
+    window.addEventListener('load', () => {
+      setTimeout(initTallitConfigurator, 100);
+    });
+  </script>
 </body>
 
 </html>
