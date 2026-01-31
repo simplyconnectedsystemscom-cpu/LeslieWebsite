@@ -6,11 +6,13 @@ const path = require('path');
 // Vite removed
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const DB_FILE = path.join(__dirname, 'database.json');
 
 app.use(cors());
 app.use(bodyParser.json());
+// Serve static frontend files
+app.use(express.static(path.join(__dirname, 'dist')));
 
 // Initialize Database
 if (!fs.existsSync(DB_FILE)) {
