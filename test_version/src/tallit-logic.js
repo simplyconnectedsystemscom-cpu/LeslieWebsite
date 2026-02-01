@@ -1430,7 +1430,7 @@ async function loginUser(name) {
         if (data.user) {
             tcState.userId = data.user.id; tcState.userName = data.user.name;
             alert(`Welcome back, ${tcState.userName}!`);
-            loadUserDesigns(tcState.userId); // Load designs on login
+            loadUserDesignsAPI(tcState.userId); // Load designs on login
         }
     } catch (e) { console.error(e); }
 }
@@ -1453,7 +1453,7 @@ async function saveCurrentDesign() {
             body: JSON.stringify({ userId: tcState.userId, designData, designName })
         });
         alert("Design Saved Successfully!");
-        loadUserDesigns(tcState.userId); // Refresh list
+        loadUserDesignsAPI(tcState.userId); // Refresh list
     } catch (e) { alert("Save failed"); }
 }
 
@@ -1465,7 +1465,7 @@ export async function showGlobalStats() {
     } catch (e) { alert("Stats Error"); }
 }
 
-async function loadUserDesigns(userId) {
+async function loadUserDesignsAPI(userId) {
     try {
         const response = await fetch(`${CONFIG.apiBase}/designs/${userId}`);
         const designs = await response.json();
