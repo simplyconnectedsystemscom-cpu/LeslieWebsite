@@ -193,7 +193,9 @@
 #tallit-configurator-section .builder-controls button {
     flex: 0 0 auto;
     /* Stop growing/shrinking */
-    padding: 0.8rem 1.2rem;
+    padding: 0.8rem 2rem;
+    min-width: 100px;
+    /* Make buttons wider as requested */
     background-color: #000 !important;
     /* Force Black */
     border: 1px solid var(--config-color-glass-border);
