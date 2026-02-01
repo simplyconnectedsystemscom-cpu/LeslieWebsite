@@ -32,7 +32,7 @@ const readDB = () => {
 // ... existing code ...
 
 // Catch-all for SPA (return index.html)
-app.get('*', (req, res, next) => {
+app.get(/.*/, (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
