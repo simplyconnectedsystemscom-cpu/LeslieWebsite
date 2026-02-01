@@ -1300,7 +1300,11 @@ function showContinuePrompt() {
     const tzArea = document.getElementById('tzitzit-selection-area');
     if (tzArea && tzArea.style.display !== 'none') return;
 
-    if (document.getElementById('stripeContinuePrompt')) return;
+    // Ensure we actually have stripes
+    if (tcState.stripePattern.length === 0) return;
+
+    const existing = document.getElementById('stripeContinuePrompt');
+    if (existing) existing.remove();
     const builderControls = document.querySelector('.builder-controls'); // Or target the add buttons container
     if (!builderControls) return;
 
