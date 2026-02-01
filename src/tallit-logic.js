@@ -1311,7 +1311,7 @@ function showContinuePrompt() {
 
     // Content (No Button)
     tooltip.innerHTML =
-        '<div style="margin-bottom: 0;"><strong>Great Choice!</strong><br>Now select a <strong>Space</strong> or click <strong>Done Selecting</strong> below.</div>';
+        '<div style="margin-bottom: 0;"><strong>Great Choice!</strong><br>Now select a <strong>Space</strong>, <strong>Delete</strong> this stripe, or click <strong>Done Selecting</strong> below.</div>';
 }
 
 function showSpaceNextPrompt() {
