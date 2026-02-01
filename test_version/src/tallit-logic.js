@@ -4,7 +4,7 @@
 // Adapted for Scoped Integration with Node.js Backend
 
 const CONFIG = {
-    apiBase: 'http://localhost:3000/api'
+    apiBase: '/api'
 };
 
 // ---------------- Constants ----------------
@@ -613,14 +613,7 @@ function renderTCControls() {
     updateBuilderVisibility();
     reattachControlListeners();
 
-    // Walkthrough: Show Edit Hint on first stripe
-    if (tcState.stripePattern.length === 1 && !tcState.hasShownEditHint) {
-        // Use timeout to ensure DOM is painted and layout is settled for positioning
-        setTimeout(() => {
-            showStripeEditPrompt();
-            tcState.hasShownEditHint = true;
-        }, 100);
-    }
+
 
     // Walkthrough: Continue Hint on second stripe (Disabled for now)
     /*
@@ -850,6 +843,9 @@ function reattachControlListeners() {
             if (e.target.classList.contains('delete-btn')) return;
             tcState.activeStripeId = parseFloat(el.dataset.id);
             renderTCControls();
+
+            // Show prompt ALWAYS on selection per user request
+            setTimeout(showStripeEditPrompt, 50);
         };
 
         el.onclick = handler;
@@ -900,16 +896,15 @@ function reattachControlListeners() {
             }
             // else: Do nothing. Base color is fixed.
 
-            // End Picking Mode
-            if (tcState.pickingColor) {
-                tcState.pickingColor = false;
-                // Dismiss Tooltip if exists
-                const tooltip = document.getElementById('stripeEditPrompt');
-                if (tooltip) tooltip.remove();
+            // Always end Picking Mode and show next prompt
+            tcState.pickingColor = false;
 
-                // Show "Select Space" Hint always
-                setTimeout(showContinuePrompt, 300);
-            }
+            // Dismiss Tooltip if exists
+            const tooltip = document.getElementById('stripeEditPrompt');
+            if (tooltip) tooltip.remove();
+
+            // Show "Select Space" Hint always
+            setTimeout(showContinuePrompt, 300);
 
 
             renderTCControls();
@@ -1088,6 +1083,7 @@ function attachIntegrationListeners() {
 
         nameInput.onblur = () => {
             if (nameInput.value && nameInput.value !== tcState.userName) {
+                dismissTooltip(); // Ensure tooltip goes away
                 loginUser(nameInput.value);
                 // Trigger next step in walkthrough
                 setTimeout(showStripePrompt, 500);
@@ -1152,6 +1148,9 @@ function resetTCDesign() {
     renderTCCanvas();
     renderTCControls();
     updateTCSummary();
+
+    // Show prompt for the new stripe
+    setTimeout(showStripeEditPrompt, 100);
 }
 
 function showStripePrompt() {
@@ -1187,6 +1186,7 @@ function showStripePrompt() {
     });
 }
 
+
 function addStripeItem(type, size) {
     const usage = tcState.stripePattern.reduce((acc, i) => acc + i.width, 0);
     if (usage + size > 12) return alert("Zone limit reached (12 inches)");
@@ -1205,6 +1205,7 @@ function addStripeItem(type, size) {
         if (el) el.remove();
     });
 
+
     // Show "Done Hint" if valid (stripe)
     if (type === 'stripe') {
         setTimeout(showDonePrompt, 300);
@@ -1215,6 +1216,11 @@ function addStripeItem(type, size) {
 
     renderTCControls();
     renderTCCanvas();
+
+    // Show "Pick Color" prompt for the new stripe
+    if (type === 'stripe') {
+        setTimeout(showStripeEditPrompt, 300);
+    }
 }
 
 function showDonePrompt() {
@@ -1245,24 +1251,41 @@ function showDonePrompt() {
 }
 
 function showStripeEditPrompt() {
-    if (document.getElementById('stripeEditPrompt')) return;
-
     // Target the currently active (selected) item
     const stack = document.getElementById('tc-stripeStack');
     const activeItem = stack ? stack.querySelector('.stripe-item.active') : null;
 
-    // Fallback to last element if no active item found (shouldn't happen on add)
-    const targetItem = activeItem || (stack ? stack.lastElementChild : null);
+    // Only show if there IS an active item (don't fallback to last randomly)
+    const targetItem = activeItem;
 
-    if (!targetItem) return;
+    if (!targetItem) {
+        // If no item is selected, hide the prompt if it exists
+        const existing = document.getElementById('stripeEditPrompt');
+        if (existing) existing.remove();
+        return;
+    }
 
-    const tooltip = document.createElement('div');
-    tooltip.id = 'stripeEditPrompt';
-    tooltip.innerText = 'Pick Color or Delete "x"';
-    tooltip.className = 'walkthrough-tooltip';
+    let tooltip = document.getElementById('stripeEditPrompt');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'stripeEditPrompt';
+        tooltip.className = 'walkthrough-tooltip';
+        document.body.appendChild(tooltip);
+        // Smooth entry
+        setTimeout(() => tooltip.classList.add('visible'), 50);
 
-    // Append to body to avoid overflow clipping
-    document.body.appendChild(tooltip);
+        // Attach Dismiss Listener (Only for new tooltips)
+        const dismiss = () => {
+            tooltip.classList.remove('visible');
+            setTimeout(() => tooltip.remove(), 500);
+        };
+        setTimeout(() => {
+            document.addEventListener('click', dismiss, { once: true });
+        }, 100);
+    }
+
+    tooltip.innerText = 'Pick Color or Delete Stripe';
+
 
     // Position it manually
     const updatePosition = () => {
@@ -1278,24 +1301,20 @@ function showStripeEditPrompt() {
 
     updatePosition();
 
-    // Add visible class
+    // Add visible class (Redundant but harmless here)
     setTimeout(() => tooltip.classList.add('visible'), 50);
-
-    // Dismiss Logic
-    const dismiss = () => {
-        tooltip.classList.remove('visible');
-        setTimeout(() => tooltip.remove(), 500);
-        document.removeEventListener('click', dismiss);
-    };
-
-    // Attach to document click after delay to avoid immediate trigger
-    setTimeout(() => {
-        document.addEventListener('click', dismiss, { once: true });
-    }, 100);
 }
 
 function showContinuePrompt() {
-    if (document.getElementById('stripeContinuePrompt')) return;
+    // Check if user is already done (Tzitzit area visible)
+    const tzArea = document.getElementById('tzitzit-selection-area');
+    if (tzArea && tzArea.style.display !== 'none') return;
+
+    // Ensure we actually have stripes
+    if (tcState.stripePattern.length === 0) return;
+
+    const existing = document.getElementById('stripeContinuePrompt');
+    if (existing) existing.remove();
     const builderControls = document.querySelector('.builder-controls'); // Or target the add buttons container
     if (!builderControls) return;
 
@@ -1304,47 +1323,20 @@ function showContinuePrompt() {
     tooltip.className = 'walkthrough-tooltip';
     tooltip.style.minWidth = '250px';
 
-    // Content with Button
+    // Content (No Button)
     tooltip.innerHTML =
-        '<div style="margin-bottom: 8px;"><strong>Great Choice!</strong><br>Now select a <strong>Space</strong> or click <strong>Done Selecting</strong> below.</div>' +
-        '<button id="btnDismissContinue" style="' +
-        'background: rgba(0,0,0,0.8); ' +
-        'color: #d4af37; ' +
-        'border: 1px solid #000; ' +
-        'padding: 4px 12px; ' +
-        'border-radius: 4px; ' +
-        'cursor: pointer; ' +
-        'font-size: 0.8rem; ' +
-        'font-weight: bold;">' +
-        'Got it' +
-        '</button>';
+        '<div style="margin-bottom: 0;"><strong>Great Choice!</strong><br>Now select a <strong>Space</strong>, <strong>Delete</strong> this stripe, or click <strong>Done Selecting</strong> below.</div>';
 
     // Position relative to builder controls (Buttons)
-    // We want it roughly where the "Add Stripe" prompt was
     builderControls.style.position = 'relative';
     builderControls.appendChild(tooltip);
 
-    // Explicitly override the default top calculation style if needed, 
-    // but the default CSS might put it at top: -xxx. 
-    // Let's force it to float above the buttons area.
     tooltip.style.top = '-110px';
     tooltip.style.left = '50%';
     tooltip.style.transform = 'translateX(-50%)';
 
     // Visible
     setTimeout(() => tooltip.classList.add('visible'), 50);
-
-    // Dismiss Logic
-    const dismiss = () => {
-        tooltip.classList.remove('visible');
-        setTimeout(() => tooltip.remove(), 500);
-    };
-
-    // Button Click
-    tooltip.querySelector('#btnDismissContinue').addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent bubbling
-        dismiss();
-    });
 }
 
 function showSpaceNextPrompt() {
@@ -1363,29 +1355,13 @@ function showSpaceNextPrompt() {
     tooltip.style.transform = 'translateX(-50%)';
 
     tooltip.innerHTML =
-        '<div style="margin-bottom: 8px;"><strong>Space Added!</strong><br>Select another <strong>Stripe</strong> or <strong>Delete</strong> the space.</div>' +
-        '<button id="btnDismissSpaceNext" style="' +
-        'background: rgba(0,0,0,0.8); ' +
-        'color: #d4af37; ' +
-        'border: 1px solid #000; ' +
-        'padding: 4px 12px; ' +
-        'border-radius: 4px; ' +
-        'cursor: pointer; ' +
-        'font-size: 0.8rem; ' +
-        'font-weight: bold;">' +
-        'Got it' +
-        '</button>';
+        '<div style="margin-bottom: 0;"><strong>Space Added!</strong><br>Select another <strong>Stripe</strong> or <strong>Delete</strong> the space.</div>';
 
     builderControls.style.position = 'relative';
     builderControls.appendChild(tooltip);
 
     // Smooth entry
     setTimeout(() => tooltip.classList.add('visible'), 50);
-
-    // Dismiss logic
-    tooltip.querySelector('#btnDismissSpaceNext').onclick = () => {
-        tooltip.remove();
-    };
 }
 
 function showTzitzitPrompt() {
@@ -1402,18 +1378,12 @@ function showTzitzitPrompt() {
     tooltip.style.transform = 'translateX(-50%)';
 
     tooltip.innerHTML =
-        '<div style="margin-bottom: 8px;"><strong>Next Step</strong><br>Select your <strong>Tzitzit</strong> style.</div>' +
-        '<button id="btnDismissTzitzit" style="' +
-        'background: rgba(0,0,0,0.8); color: #d4af37; border: 1px solid #000; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">' +
-        'Got it' +
-        '</button>';
+        '<div style="margin-bottom: 0;"><strong>Next Step</strong><br>Select your <strong>Tzitzit</strong> style.</div>';
 
     container.style.position = 'relative';
     container.appendChild(tooltip);
 
     setTimeout(() => tooltip.classList.add('visible'), 50);
-
-    tooltip.querySelector('#btnDismissTzitzit').onclick = () => tooltip.remove();
 }
 
 function showAtaraPrompt() {
@@ -1430,11 +1400,7 @@ function showAtaraPrompt() {
     tooltip.style.transform = 'translateX(-50%)';
 
     tooltip.innerHTML =
-        '<div style="margin-bottom: 8px;"><strong>Final Polish</strong><br>Select an <strong>Atara</strong> to complete your design.</div>' +
-        '<button id="btnDismissAtara" style="' +
-        'background: rgba(0,0,0,0.8); color: #d4af37; border: 1px solid #000; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">' +
-        'Got it' +
-        '</button>';
+        '<div style="margin-bottom: 0;"><strong>Final Polish</strong><br>Select an <strong>Atara</strong> to complete your design.</div>';
 
     container.style.position = 'relative';
     container.appendChild(tooltip);
@@ -1443,8 +1409,6 @@ function showAtaraPrompt() {
 
     // Scroll to Atara
     container.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-    tooltip.querySelector('#btnDismissAtara').onclick = () => tooltip.remove();
 }
 
 // --- API ---

@@ -12,7 +12,9 @@ const DB_FILE = path.join(__dirname, 'database.json');
 app.use(cors());
 app.use(bodyParser.json());
 // Serve static frontend files
+// Serve static frontend files
 app.use(express.static(path.join(__dirname, 'dist')));
+app.use(express.static(__dirname)); // Fallback to root for dev/test-version
 
 // Initialize Database
 if (!fs.existsSync(DB_FILE)) {

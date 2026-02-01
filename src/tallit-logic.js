@@ -4,7 +4,7 @@
 // Adapted for Scoped Integration with Node.js Backend
 
 const CONFIG = {
-    apiBase: 'http://localhost:3000/api'
+    apiBase: '/api'
 };
 
 // ---------------- Constants ----------------
