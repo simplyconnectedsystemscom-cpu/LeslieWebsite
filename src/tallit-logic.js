@@ -901,16 +901,15 @@ function reattachControlListeners() {
             }
             // else: Do nothing. Base color is fixed.
 
-            // End Picking Mode
-            if (tcState.pickingColor) {
-                tcState.pickingColor = false;
-                // Dismiss Tooltip if exists
-                const tooltip = document.getElementById('stripeEditPrompt');
-                if (tooltip) tooltip.remove();
+            // Always end Picking Mode and show next prompt
+            tcState.pickingColor = false;
 
-                // Show "Select Space" Hint always
-                setTimeout(showContinuePrompt, 300);
-            }
+            // Dismiss Tooltip if exists
+            const tooltip = document.getElementById('stripeEditPrompt');
+            if (tooltip) tooltip.remove();
+
+            // Show "Select Space" Hint always
+            setTimeout(showContinuePrompt, 300);
 
 
             renderTCControls();
