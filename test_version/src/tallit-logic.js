@@ -1467,10 +1467,12 @@ export async function showGlobalStats() {
 
 async function loadUserDesigns(userId) {
     try {
-        const res = await fetch(`${CONFIG.apiBase}/designs/${userId}`);
-        const designs = await res.json();
+        const response = await fetch(`${CONFIG.apiBase}/designs/${userId}`);
+        const designs = await response.json();
         renderSavedDesignsList(designs);
-    } catch (e) { console.error("Load Error", e); }
+    } catch (error) {
+        console.error("Load Error:", error);
+    }
 }
 
 function renderSavedDesignsList(designs) {
