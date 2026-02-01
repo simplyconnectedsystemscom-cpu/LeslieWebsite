@@ -6,20 +6,19 @@ const path = require('path');
 // Vite removed
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+// Port configured below
 const DB_FILE = path.join(__dirname, 'database.json');
 
 app.use(cors());
 app.use(bodyParser.json());
-// Serve static frontend files
-// Serve static frontend files
-app.use(express.static(path.join(__dirname, 'dist')));
-app.use(express.static(__dirname)); // Fallback to root for dev/test-version
 
 // Initialize Database
 if (!fs.existsSync(DB_FILE)) {
     fs.writeFileSync(DB_FILE, JSON.stringify({ users: [], designs: [], stats: { totalUsers: 0, totalDesigns: 0 } }, null, 2));
 }
+
+// Serve Static Files (Vite Build)
+app.use(express.static(path.join(__dirname, 'dist')));
 
 // Helper to read DB
 const readDB = () => {
@@ -29,6 +28,20 @@ const readDB = () => {
         return { users: [], designs: [], stats: { totalUsers: 0, totalDesigns: 0 } };
     }
 };
+
+// ... existing code ...
+
+// Catch-all for SPA (return index.html)
+app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
+// Start Server (Standalone API)
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running at port ${PORT}`);
+});
 
 // Helper to write DB
 const writeDB = (data) => {
@@ -117,8 +130,5 @@ app.get('/api/stats', (req, res) => {
     });
 });
 
-// Start Server (Standalone API)
-app.listen(PORT, () => {
-    console.log(`API Server running at http://localhost:${PORT}`);
-});
+// (Listener moved up)
 
