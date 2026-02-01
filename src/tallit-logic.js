@@ -1312,6 +1312,17 @@ function showContinuePrompt() {
     // Content (No Button)
     tooltip.innerHTML =
         '<div style="margin-bottom: 0;"><strong>Great Choice!</strong><br>Now select a <strong>Space</strong>, <strong>Delete</strong> this stripe, or click <strong>Done Selecting</strong> below.</div>';
+
+    // Position relative to builder controls (Buttons)
+    builderControls.style.position = 'relative';
+    builderControls.appendChild(tooltip);
+
+    tooltip.style.top = '-110px';
+    tooltip.style.left = '50%';
+    tooltip.style.transform = 'translateX(-50%)';
+
+    // Visible
+    setTimeout(() => tooltip.classList.add('visible'), 50);
 }
 
 function showSpaceNextPrompt() {
