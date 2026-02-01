@@ -1110,6 +1110,15 @@ function resetTCDesign() {
     tcState.isBackView = false;
     tcState.pickingColor = false;
 
+    // Clear ANY active prompts
+    ['stripeEditPrompt', 'stripeContinuePrompt', 'stripeBuilderPrompt', 'doneValuesPrompt', 'spaceNextPrompt', 'tzitzitPrompt', 'ataraPrompt'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+    });
+
+    // Show Prompt for "First Stripe" again
+    setTimeout(showStripePrompt, 300);
+
     // 2. Reset UI Visibility
     document.getElementById('row-stripes').style.display = 'flex';
     document.getElementById('row-stripes').style.pointerEvents = 'auto'; // Re-enable interaction
@@ -1457,11 +1466,11 @@ export async function showGlobalStats() {
 }
 
 async function loadUserDesigns(userId) {
-    try {
-        const res = await fetch(`${CONFIG.apiBase}/designs/${userId}`);
-        const designs = await res.json();
-        renderSavedDesignsList(designs);
-    } catch (e) { console.error("Load Error", e); }
+
+    const res = await fetch(`${CONFIG.apiBase}/designs/${userId}`);
+    const designs = await res.json();
+    renderSavedDesignsList(designs);
+} catch (e) { console.error("Load Error", e); }
 }
 
 function renderSavedDesignsList(designs) {
