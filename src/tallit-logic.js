@@ -1212,6 +1212,7 @@ function addStripeItem(type, size) {
         if (el) el.remove();
     });
 
+
     // Show "Done Hint" if valid (stripe)
     if (type === 'stripe') {
         setTimeout(showDonePrompt, 300);
