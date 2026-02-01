@@ -850,6 +850,9 @@ function reattachControlListeners() {
             if (e.target.classList.contains('delete-btn')) return;
             tcState.activeStripeId = parseFloat(el.dataset.id);
             renderTCControls();
+
+            // Show prompt ALWAYS on selection per user request
+            setTimeout(showStripeEditPrompt, 50);
         };
 
         el.onclick = handler;
@@ -1153,6 +1156,9 @@ function resetTCDesign() {
     renderTCCanvas();
     renderTCControls();
     updateTCSummary();
+
+    // Show prompt for the new stripe
+    setTimeout(showStripeEditPrompt, 100);
 }
 
 function showStripePrompt() {
@@ -1246,24 +1252,32 @@ function showDonePrompt() {
 }
 
 function showStripeEditPrompt() {
-    if (document.getElementById('stripeEditPrompt')) return;
-
     // Target the currently active (selected) item
     const stack = document.getElementById('tc-stripeStack');
     const activeItem = stack ? stack.querySelector('.stripe-item.active') : null;
 
-    // Fallback to last element if no active item found (shouldn't happen on add)
-    const targetItem = activeItem || (stack ? stack.lastElementChild : null);
+    // Only show if there IS an active item (don't fallback to last randomly)
+    const targetItem = activeItem;
 
-    if (!targetItem) return;
+    if (!targetItem) {
+        // If no item is selected, hide the prompt if it exists
+        const existing = document.getElementById('stripeEditPrompt');
+        if (existing) existing.remove();
+        return;
+    }
 
-    const tooltip = document.createElement('div');
-    tooltip.id = 'stripeEditPrompt';
-    tooltip.innerText = 'Pick Color or Delete "x"';
-    tooltip.className = 'walkthrough-tooltip';
+    let tooltip = document.getElementById('stripeEditPrompt');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'stripeEditPrompt';
+        tooltip.className = 'walkthrough-tooltip';
+        document.body.appendChild(tooltip);
+        // Smooth entry
+        setTimeout(() => tooltip.classList.add('visible'), 50);
+    }
 
-    // Append to body to avoid overflow clipping
-    document.body.appendChild(tooltip);
+    tooltip.innerText = 'Pick Color or Delete Stripe';
+
 
     // Position it manually
     const updatePosition = () => {
