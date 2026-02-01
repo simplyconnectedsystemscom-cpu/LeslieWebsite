@@ -36,11 +36,10 @@
 
 /* Main Layout */
 #tallit-configurator-section .designer-container {
-    display: grid;
-    grid-template-columns: 1fr 350px;
-    gap: 2rem;
-    /* height: 800px;  Fixed height for embedded view */
-    min-height: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: auto;
 }
 
 /* Canvas Area */
@@ -120,6 +119,18 @@
 }
 
 /* Controls Panel */
+#tallit-configurator-section .controls-panel {
+    order: 2;
+    padding: 1rem 0;
+    width: 100% !important;
+    max-width: 1000px !important;
+    /* Match canvas max-width preference */
+    margin: 0 auto;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
 #tallit-configurator-section .controls-panel h2 {
     font-family: var(--config-font-heading);
     color: var(--config-color-accent);
@@ -166,13 +177,23 @@
 
 #tallit-configurator-section .control-row {
     display: flex;
-    gap: 0.5rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 12px;
     align-items: center;
+    padding-bottom: 5px;
+    width: 100%;
+    scrollbar-width: none;
+}
+
+#tallit-configurator-section .control-row::-webkit-scrollbar {
+    display: none;
 }
 
 #tallit-configurator-section .builder-controls button {
-    flex: 1;
-    padding: 0.5rem;
+    flex: 0 0 auto;
+    /* Stop growing/shrinking */
+    padding: 0.8rem 1.2rem;
     background-color: #000 !important;
     /* Force Black */
     border: 1px solid var(--config-color-glass-border);
@@ -180,6 +201,7 @@
     /* Force White Text */
     cursor: pointer;
     transition: background 0.2s;
+    white-space: nowrap;
 }
 
 #tallit-configurator-section .builder-controls button:hover {
@@ -225,17 +247,27 @@
     cursor: pointer;
 }
 
-/* Color Picker */
+/* Color Picker - Horizontal Scroll Global */
 #tallit-configurator-section .color-picker {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
-    gap: 10px;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 12px;
     margin-top: 10px;
+    padding-bottom: 10px;
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+#tallit-configurator-section .color-picker::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari */
 }
 
 #tallit-configurator-section .color-swatch {
-    width: 30px;
-    height: 30px;
+    flex: 0 0 auto;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     cursor: pointer;
     position: relative;
@@ -501,72 +533,65 @@ to {
 
 /* --- Responsive Adjustments (Added v2) --- */
 @media (max-width: 1024px) {
-    #tallit-configurator-section .designer-container {
-        grid-template-columns: 1fr;
-        /* Stack vertically */
-        gap: 2rem;
-        min-height: auto;
-    }
 
-    #tallit-configurator-section .canvas-area {
-        padding: 1rem;
-        width: 100%;
-        overflow: hidden;
-        /* Prevent horizontal scroll */
-    }
-
-    #tallit-configurator-section canvas {
-        width: 100% !important;
-        height: auto !important;
-        aspect-ratio: 4/3;
-        /* Maintain aspect ratio */
-    }
-
-    /* Make header stack */
-    #tallit-configurator-section .blueprint-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-
-    #tallit-configurator-section .header-right {
-        width: 100%;
-        justify-content: space-between;
-        font-size: 0.8rem;
-    }
-}
-
-/* Touch Targets for Mobile */
-@media (max-width: 600px) {
+    /* Force Single Column and Horizontal Tools for Tablets & Mobile */
     #tallit-configurator-section .designer-container {
         display: flex;
         flex-direction: column;
+        gap: 1rem;
     }
 
-    #tallit-configurator-section .controls-panel {
-        order: 2;
-        /* Ensure controls come after canvas */
+    /* Controls Panel Styles Moved to Global */
+
+    #tallit-configurator-section .controls-panel h2 {
+        display: none;
     }
 
+    /* Horizontal Scrollers */
+    #tallit-configurator-section .color-picker,
+    #tallit-configurator-section .control-row,
+    #tallit-configurator-section .horizontal-gallery {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 12px;
+        padding-bottom: 0.5rem;
+        width: 100%;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #tallit-configurator-section .color-picker::-webkit-scrollbar,
+    #tallit-configurator-section .control-row::-webkit-scrollbar,
+    #tallit-configurator-section .horizontal-gallery::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Adjust items */
     #tallit-configurator-section .color-swatch {
-        width: 40px;
-        height: 40px;
-        /* Bigger touch target */
+        flex: 0 0 auto;
+        width: 45px;
+        height: 45px;
     }
 
     #tallit-configurator-section .btn,
     #tallit-configurator-section .builder-controls button {
-        padding: 0.8rem;
-        /* Ensure tappable */
+        padding: 0.8rem 1rem;
+        white-space: nowrap;
+        flex: 0 0 auto;
     }
 
-    #tallit-configurator-section {
-        padding: 2rem 0;
-        /* Less vertical padding overall */
+    #tallit-configurator-section .tzitzit-card {
+        flex: 0 0 auto;
     }
 
-    #tallit-configurator-section .blueprint-input {
-        min-width: unset;
-        width: 100%;
+    #tallit-configurator-section .stripe-stack-container {
+        max-height: 150px;
+    }
+
+    /* Hide static base color */
+    .control-group h3:contains("Base Color"),
+    .control-group:has(h3:contains("Base Color")) {
+        /* Optional: Hide if desired, or keep as compact */
     }
 }

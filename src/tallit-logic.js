@@ -169,6 +169,9 @@ export function initTallitConfigurator() {
             console.warn('attachIntegrationListeners not found');
         }
 
+        // Initialize Mobile Step (Hides instructions etc)
+        updateMobileStep('stripes');
+
         console.log('Tallit Configurator Init Complete');
     } catch (e) {
         console.error("CRITICAL INIT ERROR:", e);
@@ -945,14 +948,8 @@ function reattachControlListeners() {
     const btnDone = document.getElementById('btn-done-selecting');
     if (btnDone) {
         btnDone.onclick = () => {
-            // Show Tzitzit (Expand under)
-            document.getElementById('tzitzit-selection-area').style.display = 'block';
-
-            // Hide the "Done" button itself to prevent re-clicking
-            btnDone.style.display = 'none';
-
-            // Scroll to Tzitzit
-            document.getElementById('tzitzit-selection-area').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // TRANSITION TO TZITZIT STEP
+            updateMobileStep('tzitzit');
 
             setTimeout(showTzitzitPrompt, 600);
         };
@@ -982,11 +979,9 @@ function reattachControlListeners() {
                 renderTCCanvas();
                 updateTCSummary();
 
-                // Flow: Show Atara after Tzitzit selected
+                // TRANSITION TO ATARA STEP
                 if (id !== 'none') {
-                    const ataraArea = document.getElementById('atara-selection-area');
-                    ataraArea.style.display = 'block';
-                    ataraArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    updateMobileStep('atara');
                 }
             };
         });
@@ -1009,12 +1004,8 @@ function reattachControlListeners() {
                 renderTCCanvas();
                 updateTCSummary();
 
-                // Flow: Show Save Options
-                const saveArea = document.getElementById('final-options-area');
-                if (saveArea) {
-                    saveArea.style.display = 'block';
-                    saveArea.scrollIntoView({ behavior: 'smooth' });
-                }
+                // TRANSITION TO FINAL STEP
+                updateMobileStep('final');
             };
         });
     }
@@ -1412,6 +1403,50 @@ function showSpaceNextPrompt() {
     setTimeout(() => tooltip.classList.add('visible'), 50);
 }
 
+// --- Mobile Step Manager ---
+function updateMobileStep(step) {
+    // Only apply strict step logic on mobile (check width or just logical flow for all)
+    // For now, we apply this logic generally as it cleans up the UI for everyone
+    const stripeArea = document.querySelector('.builder-controls');
+    const tzitzitArea = document.getElementById('tzitzit-selection-area');
+    const ataraArea = document.getElementById('atara-selection-area');
+    const finalArea = document.getElementById('final-options-area');
+    const detailsArea = document.querySelector('.blueprint-details');
+
+    // Function to safely set display
+    const setDisplay = (el, val) => { if (el) el.style.display = val; };
+
+    if (step === 'stripes') {
+        setDisplay(stripeArea, 'block');
+        setDisplay(tzitzitArea, 'none');
+        setDisplay(ataraArea, 'none');
+        setDisplay(finalArea, 'none');
+        setDisplay(detailsArea, 'none'); // HIDE INSTRUCTIONS
+    } else if (step === 'tzitzit') {
+        setDisplay(stripeArea, 'none'); // Hide Stripes
+        setDisplay(tzitzitArea, 'block');
+        setDisplay(ataraArea, 'none');
+        setDisplay(finalArea, 'none');
+        setDisplay(detailsArea, 'none');
+        tzitzitArea?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else if (step === 'atara') {
+        setDisplay(stripeArea, 'none');
+        setDisplay(tzitzitArea, 'none'); // Hide Tzitzit to save space
+        setDisplay(ataraArea, 'block');
+        setDisplay(finalArea, 'none');
+        setDisplay(detailsArea, 'none');
+        ataraArea?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else if (step === 'final') {
+        setDisplay(stripeArea, 'none');
+        setDisplay(tzitzitArea, 'none');
+        setDisplay(ataraArea, 'none'); // Hide Atara
+        setDisplay(finalArea, 'block');
+        setDisplay(detailsArea, 'block'); // SHOW INSTRUCTIONS FINALLY
+        finalArea?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+
 function showTzitzitPrompt() {
     if (document.getElementById('tzitzitPrompt')) return;
     const container = document.getElementById('tzitzit-selection-area');
@@ -1456,7 +1491,7 @@ function showAtaraPrompt() {
     setTimeout(() => tooltip.classList.add('visible'), 50);
 
     // Scroll to Atara
-    container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // container.scrollIntoView({ behavior: 'smooth', block: 'center' }); // Handled by updateMobileStep
 }
 
 // --- API ---
