@@ -111,6 +111,31 @@ export function initTallitConfigurator() {
         if (!tcCanvas) throw new Error('Canvas element #tc-canvas not found');
         tcCtx = tcCanvas.getContext('2d');
 
+        // --- High-DPI Setup ---
+        const dpr = window.devicePixelRatio || 1;
+        // Logical size (CSS pixels)
+        const rect = tcCanvas.getBoundingClientRect();
+
+        // If canvas has no intrinsic size yet, force defaults
+        const logicalWidth = 800;
+        const logicalHeight = 600;
+
+        // Set PHYSICAL dimensions (scaled)
+        tcCanvas.width = logicalWidth * dpr;
+        tcCanvas.height = logicalHeight * dpr;
+
+        // Force CSS dimensions (logical)
+        tcCanvas.style.width = logicalWidth + 'px';
+        tcCanvas.style.height = logicalHeight + 'px';
+
+        // Scale Context to match
+        tcCtx.scale(dpr, dpr);
+
+        // Store logical width/height for renderers to use
+        tcCanvas._logicalWidth = logicalWidth;
+        tcCanvas._logicalHeight = logicalHeight;
+        // -----------------------
+
         tcZoneUsage = document.getElementById('tc-zoneUsage');
         tcStripeStack = document.getElementById('tc-stripeStack');
         tcColorPicker = document.getElementById('tc-stripeColorPicker');
@@ -157,8 +182,11 @@ function renderTCCanvas() {
     if (!tcCanvas) return; // Guard clause
     if (!tcCtx) tcCtx = tcCanvas.getContext('2d');
 
-    const w = tcCanvas.width;
-    const h = tcCanvas.height;
+    if (!tcCtx) tcCtx = tcCanvas.getContext('2d');
+
+    // Use stored logical dimensions or fallback
+    const w = tcCanvas._logicalWidth || 800;
+    const h = tcCanvas._logicalHeight || 600;
 
     // Clear
     tcCtx.clearRect(0, 0, w, h);
