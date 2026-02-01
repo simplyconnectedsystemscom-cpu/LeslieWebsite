@@ -613,12 +613,7 @@ function renderTCControls() {
     updateBuilderVisibility();
     reattachControlListeners();
 
-    // Walkthrough: Always show Edit Hint for active stripe
-    if (tcState.activeStripeId) {
-        setTimeout(() => {
-            showStripeEditPrompt();
-        }, 100);
-    }
+
 
     // Walkthrough: Continue Hint on second stripe (Disabled for now)
     /*
