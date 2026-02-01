@@ -897,10 +897,8 @@ function reattachControlListeners() {
                 if (item && item.type === 'stripe') {
                     item.color = colorObj;
                 }
-            } else {
-                // Set temp base color if we supported that, but we don't for stripes
-                tcState.baseColor = colorObj;
             }
+            // else: Do nothing. Base color is fixed.
 
             // End Picking Mode
             if (tcState.pickingColor) {
@@ -1110,6 +1108,7 @@ function resetTCDesign() {
     // 1. Reset State
     tcState.stripePattern = [];
     tcState.activeStripeId = null;
+    tcState.baseColor = TC_BASE_COLOR; // Reset to fixed white
     tcState.tzitzitType = TC_TZITZIT_TYPES[0]; // None
     tcState.ataraStyle = TC_ATARA_STYLES[0]; // None
     tcState.isBackView = false;
