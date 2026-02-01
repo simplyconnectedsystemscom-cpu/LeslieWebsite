@@ -500,23 +500,25 @@ to {
 }
 
 /* --- Responsive Adjustments (Added v2) --- */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
     #tallit-configurator-section .designer-container {
         grid-template-columns: 1fr;
         /* Stack vertically */
-        gap: 1rem;
+        gap: 2rem;
+        min-height: auto;
     }
 
     #tallit-configurator-section .canvas-area {
         padding: 1rem;
-        /* Less padding on mobile */
         width: 100%;
+        overflow: hidden;
+        /* Prevent horizontal scroll */
     }
 
     #tallit-configurator-section canvas {
         width: 100% !important;
-        /* Force fluid width */
         height: auto !important;
+        aspect-ratio: 4/3;
         /* Maintain aspect ratio */
     }
 
@@ -536,6 +538,16 @@ to {
 
 /* Touch Targets for Mobile */
 @media (max-width: 600px) {
+    #tallit-configurator-section .designer-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #tallit-configurator-section .controls-panel {
+        order: 2;
+        /* Ensure controls come after canvas */
+    }
+
     #tallit-configurator-section .color-swatch {
         width: 40px;
         height: 40px;
@@ -551,5 +563,10 @@ to {
     #tallit-configurator-section {
         padding: 2rem 0;
         /* Less vertical padding overall */
+    }
+
+    #tallit-configurator-section .blueprint-input {
+        min-width: unset;
+        width: 100%;
     }
 }
