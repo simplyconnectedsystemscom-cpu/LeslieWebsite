@@ -1088,6 +1088,7 @@ function attachIntegrationListeners() {
 
         nameInput.onblur = () => {
             if (nameInput.value && nameInput.value !== tcState.userName) {
+                dismissTooltip(); // Ensure tooltip goes away
                 loginUser(nameInput.value);
                 // Trigger next step in walkthrough
                 setTimeout(showStripePrompt, 500);
