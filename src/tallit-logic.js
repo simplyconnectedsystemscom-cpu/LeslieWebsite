@@ -888,6 +888,7 @@ function reattachControlListeners() {
         el.onclick = () => {
             const colorName = el.dataset.name;
             const colorObj = TC_COLORS.find(c => c.name === colorName);
+            if (window.gtag) window.gtag('event', 'select_content', { content_type: 'stripe_color', item_id: colorName });
             if (tcState.activeStripeId && tcState.stripePattern.length > 0) {
                 const item = tcState.stripePattern.find(i => i.id === tcState.activeStripeId);
                 if (item && item.type === 'stripe') {
@@ -940,6 +941,7 @@ function reattachControlListeners() {
 
                 const id = card.dataset.id;
                 tcState.tzitzitType = TC_TZITZIT_TYPES.find(t => t.id === id);
+                if (window.gtag) window.gtag('event', 'select_content', { content_type: 'tzitzit', item_id: id });
 
                 // Dismiss prompt
                 const p = document.getElementById('tzitzitPrompt');
@@ -969,6 +971,7 @@ function reattachControlListeners() {
             card.onclick = () => {
                 const id = card.dataset.id;
                 tcState.ataraStyle = TC_ATARA_STYLES.find(s => s.id === id);
+                if (window.gtag) window.gtag('event', 'select_content', { content_type: 'atara', item_id: id });
 
                 // Dismiss Prompt
                 const prompt = document.getElementById('ataraPrompt');
@@ -1102,6 +1105,7 @@ function attachIntegrationListeners() {
 
 function resetTCDesign() {
     // 1. Reset State
+    if (window.gtag) window.gtag('event', 'reset_design', { event_category: 'tallit_configurator' });
     tcState.stripePattern = [];
     tcState.activeStripeId = null;
     tcState.baseColor = TC_BASE_COLOR; // Reset to fixed white
@@ -1202,6 +1206,13 @@ function addStripeItem(type, size) {
     const newItem = { id: Math.random(), type, width: size, color: TC_COLORS[3] }; // Default Black
     tcState.stripePattern.push(newItem);
     tcState.activeStripeId = newItem.id;
+
+    // Analytics
+    if (window.gtag) window.gtag('event', 'design_interaction', {
+        event_category: 'tallit_configurator',
+        action: 'add_' + type,
+        label: size + ' inch'
+    });
 
     // Force Color Cycle
     if (type === 'stripe') {
@@ -1429,6 +1440,7 @@ async function loginUser(name) {
         const data = await res.json();
         if (data.user) {
             tcState.userId = data.user.id; tcState.userName = data.user.name;
+            if (window.gtag) window.gtag('event', 'login', { method: 'name_entry' });
             alert(`Welcome back, ${tcState.userName}!`);
             loadUserDesignsAPI(tcState.userId); // Load designs on login
         }
@@ -1452,6 +1464,7 @@ async function saveCurrentDesign() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: tcState.userId, designData, designName })
         });
+        if (window.gtag) window.gtag('event', 'save_design', { event_category: 'tallit_configurator', design_name: designName });
         alert("Design Saved Successfully!");
         loadUserDesignsAPI(tcState.userId); // Refresh list
     } catch (e) { alert("Save failed"); }
