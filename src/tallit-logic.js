@@ -1338,17 +1338,11 @@ function showContinuePrompt() {
     // Visible
     setTimeout(() => tooltip.classList.add('visible'), 50);
 
-    // Dismiss Logic
-    const dismiss = () => {
-        tooltip.classList.remove('visible');
-        setTimeout(() => tooltip.remove(), 500);
+    // Dismiss Logic - Instant
+    tooltip.querySelector('#btnDismissContinue').onclick = (e) => {
+        e.stopPropagation();
+        tooltip.remove();
     };
-
-    // Button Click
-    tooltip.querySelector('#btnDismissContinue').addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent bubbling
-        dismiss();
-    });
 }
 
 function showSpaceNextPrompt() {
