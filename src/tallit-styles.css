@@ -443,9 +443,13 @@
     gap: 1rem;
     overflow-x: auto;
     padding-bottom: 1rem;
-    /* Center items if they fit */
-    justify-content: center;
-    /* Hide scrollbar typically */
+    padding-left: 0.5rem;
+    /* Ensure first item isn't flush against edge */
+    padding-right: 0.5rem;
+    justify-content: flex-start;
+    /* Fix: 'center' pushes items off-screen left on overflow */
+    align-items: flex-start;
+    /* Ensure items align to top */
     scrollbar-width: thin;
     scrollbar-color: var(--config-color-accent-dim) transparent;
 }
