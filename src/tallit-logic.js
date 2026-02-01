@@ -1308,41 +1308,9 @@ function showContinuePrompt() {
     tooltip.className = 'walkthrough-tooltip';
     tooltip.style.minWidth = '250px';
 
-    // Content with Button
+    // Content (No Button)
     tooltip.innerHTML =
-        '<div style="margin-bottom: 8px;"><strong>Great Choice!</strong><br>Now select a <strong>Space</strong> or click <strong>Done Selecting</strong> below.</div>' +
-        '<button id="btnDismissContinue" style="' +
-        'background: rgba(0,0,0,0.8); ' +
-        'color: #d4af37; ' +
-        'border: 1px solid #000; ' +
-        'padding: 4px 12px; ' +
-        'border-radius: 4px; ' +
-        'cursor: pointer; ' +
-        'font-size: 0.8rem; ' +
-        'font-weight: bold;">' +
-        'Got it' +
-        '</button>';
-
-    // Position relative to builder controls (Buttons)
-    // We want it roughly where the "Add Stripe" prompt was
-    builderControls.style.position = 'relative';
-    builderControls.appendChild(tooltip);
-
-    // Explicitly override the default top calculation style if needed, 
-    // but the default CSS might put it at top: -xxx. 
-    // Let's force it to float above the buttons area.
-    tooltip.style.top = '-110px';
-    tooltip.style.left = '50%';
-    tooltip.style.transform = 'translateX(-50%)';
-
-    // Visible
-    setTimeout(() => tooltip.classList.add('visible'), 50);
-
-    // Dismiss Logic - Instant
-    tooltip.querySelector('#btnDismissContinue').onclick = (e) => {
-        e.stopPropagation();
-        tooltip.remove();
-    };
+        '<div style="margin-bottom: 0;"><strong>Great Choice!</strong><br>Now select a <strong>Space</strong> or click <strong>Done Selecting</strong> below.</div>';
 }
 
 function showSpaceNextPrompt() {
@@ -1361,29 +1329,13 @@ function showSpaceNextPrompt() {
     tooltip.style.transform = 'translateX(-50%)';
 
     tooltip.innerHTML =
-        '<div style="margin-bottom: 8px;"><strong>Space Added!</strong><br>Select another <strong>Stripe</strong> or <strong>Delete</strong> the space.</div>' +
-        '<button id="btnDismissSpaceNext" style="' +
-        'background: rgba(0,0,0,0.8); ' +
-        'color: #d4af37; ' +
-        'border: 1px solid #000; ' +
-        'padding: 4px 12px; ' +
-        'border-radius: 4px; ' +
-        'cursor: pointer; ' +
-        'font-size: 0.8rem; ' +
-        'font-weight: bold;">' +
-        'Got it' +
-        '</button>';
+        '<div style="margin-bottom: 0;"><strong>Space Added!</strong><br>Select another <strong>Stripe</strong> or <strong>Delete</strong> the space.</div>';
 
     builderControls.style.position = 'relative';
     builderControls.appendChild(tooltip);
 
     // Smooth entry
     setTimeout(() => tooltip.classList.add('visible'), 50);
-
-    // Dismiss logic
-    tooltip.querySelector('#btnDismissSpaceNext').onclick = () => {
-        tooltip.remove();
-    };
 }
 
 function showTzitzitPrompt() {
@@ -1400,18 +1352,12 @@ function showTzitzitPrompt() {
     tooltip.style.transform = 'translateX(-50%)';
 
     tooltip.innerHTML =
-        '<div style="margin-bottom: 8px;"><strong>Next Step</strong><br>Select your <strong>Tzitzit</strong> style.</div>' +
-        '<button id="btnDismissTzitzit" style="' +
-        'background: rgba(0,0,0,0.8); color: #d4af37; border: 1px solid #000; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">' +
-        'Got it' +
-        '</button>';
+        '<div style="margin-bottom: 0;"><strong>Next Step</strong><br>Select your <strong>Tzitzit</strong> style.</div>';
 
     container.style.position = 'relative';
     container.appendChild(tooltip);
 
     setTimeout(() => tooltip.classList.add('visible'), 50);
-
-    tooltip.querySelector('#btnDismissTzitzit').onclick = () => tooltip.remove();
 }
 
 function showAtaraPrompt() {
@@ -1428,11 +1374,7 @@ function showAtaraPrompt() {
     tooltip.style.transform = 'translateX(-50%)';
 
     tooltip.innerHTML =
-        '<div style="margin-bottom: 8px;"><strong>Final Polish</strong><br>Select an <strong>Atara</strong> to complete your design.</div>' +
-        '<button id="btnDismissAtara" style="' +
-        'background: rgba(0,0,0,0.8); color: #d4af37; border: 1px solid #000; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">' +
-        'Got it' +
-        '</button>';
+        '<div style="margin-bottom: 0;"><strong>Final Polish</strong><br>Select an <strong>Atara</strong> to complete your design.</div>';
 
     container.style.position = 'relative';
     container.appendChild(tooltip);
@@ -1441,8 +1383,6 @@ function showAtaraPrompt() {
 
     // Scroll to Atara
     container.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-    tooltip.querySelector('#btnDismissAtara').onclick = () => tooltip.remove();
 }
 
 // --- API ---
