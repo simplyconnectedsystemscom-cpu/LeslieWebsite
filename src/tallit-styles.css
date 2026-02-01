@@ -191,10 +191,12 @@
 }
 
 #tallit-configurator-section .builder-controls button {
-    flex: 0 0 auto;
-    /* Stop growing/shrinking */
-    padding: 0.8rem 2.5rem;
-    min-width: 140px;
+    flex: 1 0 auto;
+    /* Allow growing to text length/container width */
+    padding: 0.8rem 1rem;
+    /* reduced side padding slightly so they fit better if squeezed */
+    min-width: 100px;
+    /* Reset to sensible min-width so flex works better */
     background-color: #000 !important;
     /* Force Black */
     border: 1px solid var(--config-color-glass-border);
@@ -207,6 +209,12 @@
 
 #tallit-configurator-section .builder-controls button:hover {
     background-color: #333 !important;
+}
+
+#tallit-configurator-section .control-row span {
+    flex: 0 0 auto;
+    margin-right: 0.5rem;
+    font-weight: bold;
 }
 
 #tallit-configurator-section .btn-add-stripe {
