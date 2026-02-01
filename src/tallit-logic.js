@@ -1186,6 +1186,7 @@ function showStripePrompt() {
     });
 }
 
+
 function addStripeItem(type, size) {
     const usage = tcState.stripePattern.reduce((acc, i) => acc + i.width, 0);
     if (usage + size > 12) return alert("Zone limit reached (12 inches)");
@@ -1215,6 +1216,11 @@ function addStripeItem(type, size) {
 
     renderTCControls();
     renderTCCanvas();
+
+    // Show "Pick Color" prompt for the new stripe
+    if (type === 'stripe') {
+        setTimeout(showStripeEditPrompt, 150);
+    }
 }
 
 function showDonePrompt() {
