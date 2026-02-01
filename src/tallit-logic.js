@@ -1219,7 +1219,7 @@ function addStripeItem(type, size) {
 
     // Show "Pick Color" prompt for the new stripe
     if (type === 'stripe') {
-        setTimeout(showStripeEditPrompt, 150);
+        setTimeout(showStripeEditPrompt, 300);
     }
 }
 
