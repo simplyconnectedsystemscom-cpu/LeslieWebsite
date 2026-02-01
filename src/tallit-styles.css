@@ -94,6 +94,8 @@
 #tallit-configurator-section canvas {
     max-width: 100%;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    background-color: #e0e0e0;
+    /* Fallback if drawing fails */
     background-image:
         linear-gradient(45deg, #151311 25%, transparent 25%),
         linear-gradient(-45deg, #151311 25%, transparent 25%),
@@ -491,36 +493,40 @@
     animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
+to {
+    transform: scale(1);
+    opacity: 1;
+}
 }
 
 /* --- Responsive Adjustments (Added v2) --- */
 @media (max-width: 900px) {
     #tallit-configurator-section .designer-container {
-        grid-template-columns: 1fr; /* Stack vertically */
+        grid-template-columns: 1fr;
+        /* Stack vertically */
         gap: 1rem;
     }
 
     #tallit-configurator-section .canvas-area {
-        padding: 1rem; /* Less padding on mobile */
+        padding: 1rem;
+        /* Less padding on mobile */
         width: 100%;
     }
-    
+
     #tallit-configurator-section canvas {
-        width: 100% !important; /* Force fluid width */
-        height: auto !important; /* Maintain aspect ratio */
+        width: 100% !important;
+        /* Force fluid width */
+        height: auto !important;
+        /* Maintain aspect ratio */
     }
-    
+
     /* Make header stack */
     #tallit-configurator-section .blueprint-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.5rem;
     }
-    
+
     #tallit-configurator-section .header-right {
         width: 100%;
         justify-content: space-between;
@@ -532,15 +538,18 @@
 @media (max-width: 600px) {
     #tallit-configurator-section .color-swatch {
         width: 40px;
-        height: 40px; /* Bigger touch target */
+        height: 40px;
+        /* Bigger touch target */
     }
-    
+
     #tallit-configurator-section .btn,
     #tallit-configurator-section .builder-controls button {
-        padding: 0.8rem; /* Ensure tappable */
+        padding: 0.8rem;
+        /* Ensure tappable */
     }
-    
+
     #tallit-configurator-section {
-        padding: 2rem 0; /* Less vertical padding overall */
+        padding: 2rem 0;
+        /* Less vertical padding overall */
     }
 }

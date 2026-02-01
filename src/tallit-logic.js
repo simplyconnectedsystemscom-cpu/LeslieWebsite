@@ -204,10 +204,10 @@ function renderTCCanvas() {
 
     tcCtx.save();
     tcCtx.fillStyle = baseHex;
-    tcCtx.shadowColor = 'rgba(0,0,0,0.3)';
-    tcCtx.shadowBlur = 20;
-    tcCtx.shadowOffsetX = 5;
-    tcCtx.shadowOffsetY = 10;
+    tcCtx.fillStyle = baseHex;
+    // Mobile optimization: Reduce shadow complexity
+    // tcCtx.shadowColor = 'rgba(0,0,0,0.3)';
+    // tcCtx.shadowBlur = 20; 
     tcCtx.fillRect(startX, startY, tWidth, tHeight);
     tcCtx.restore();
 
