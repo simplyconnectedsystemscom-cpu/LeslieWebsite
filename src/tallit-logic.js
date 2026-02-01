@@ -613,12 +613,10 @@ function renderTCControls() {
     updateBuilderVisibility();
     reattachControlListeners();
 
-    // Walkthrough: Show Edit Hint on first stripe
-    if (tcState.stripePattern.length === 1 && !tcState.hasShownEditHint) {
-        // Use timeout to ensure DOM is painted and layout is settled for positioning
+    // Walkthrough: Always show Edit Hint for active stripe
+    if (tcState.activeStripeId) {
         setTimeout(() => {
             showStripeEditPrompt();
-            tcState.hasShownEditHint = true;
         }, 100);
     }
 
@@ -1275,6 +1273,15 @@ function showStripeEditPrompt() {
         document.body.appendChild(tooltip);
         // Smooth entry
         setTimeout(() => tooltip.classList.add('visible'), 50);
+
+        // Attach Dismiss Listener (Only for new tooltips)
+        const dismiss = () => {
+            tooltip.classList.remove('visible');
+            setTimeout(() => tooltip.remove(), 500);
+        };
+        setTimeout(() => {
+            document.addEventListener('click', dismiss, { once: true });
+        }, 100);
     }
 
     tooltip.innerText = 'Pick Color or Delete Stripe';
@@ -1294,20 +1301,8 @@ function showStripeEditPrompt() {
 
     updatePosition();
 
-    // Add visible class
+    // Add visible class (Redundant but harmless here)
     setTimeout(() => tooltip.classList.add('visible'), 50);
-
-    // Dismiss Logic
-    const dismiss = () => {
-        tooltip.classList.remove('visible');
-        setTimeout(() => tooltip.remove(), 500);
-        document.removeEventListener('click', dismiss);
-    };
-
-    // Attach to document click after delay to avoid immediate trigger
-    setTimeout(() => {
-        document.addEventListener('click', dismiss, { once: true });
-    }, 100);
 }
 
 function showContinuePrompt() {
