@@ -61,17 +61,17 @@ const TC_COLORS = [
 
 const TC_TZITZIT_TYPES = [
     { id: 'none', name: 'No Tzitzit', description: 'Do not attach strings', image: null },
-    { id: 'white', name: 'Standard White', description: 'All white strings', image: '/images/ashkenazi.png' },
-    { id: 'techelet', name: 'Techelet (Blue)', description: 'White with blue thread', image: '/images/ashkenazi.png' },
-    { id: 'ashkenazi', name: 'Ashkenazi Knot', description: '7-8-11-13 windings', image: '/images/ashkenazi.png' },
-    { id: 'sephardic', name: 'Sephardic Knot', description: '10-5-6-5 windings', image: '/images/sephardic.png' },
-    { id: 'chabad', name: 'Chabad (Ari Zal)', description: 'Chulya groups 3-3-3', image: '/images/chabad.png' },
-    { id: 'yemenite', name: 'Yemenite (Rambam)', description: 'Specialized 7-13 chulyot', image: '/images/yemenite.png' },
-    { id: 'vilna', name: 'Vilna Gaon', description: 'Gra method 13 windings', image: '/images/vilna.png' }
+    { id: 'white', name: 'Standard White', description: 'All white strings', image: 'images/ashkenazi.png' },
+    { id: 'techelet', name: 'Techelet (Blue)', description: 'White with blue thread', image: 'images/ashkenazi.png' },
+    { id: 'ashkenazi', name: 'Ashkenazi Knot', description: '7-8-11-13 windings', image: 'images/ashkenazi.png' },
+    { id: 'sephardic', name: 'Sephardic Knot', description: '10-5-6-5 windings', image: 'images/sephardic.png' },
+    { id: 'chabad', name: 'Chabad (Ari Zal)', description: 'Chulya groups 3-3-3', image: 'images/chabad.png' },
+    { id: 'yemenite', name: 'Yemenite (Rambam)', description: 'Specialized 7-13 chulyot', image: 'images/yemenite.png' },
+    { id: 'vilna', name: 'Vilna Gaon', description: 'Gra method 13 windings', image: 'images/vilna.png' }
 ];
 
 const TC_ATARA_STYLES = [
-    { id: 'none', name: 'No Atara', text: '', meaning: 'Simple fabric band' },
+    { id: 'none', name: 'No Atara', text: '', meaning: '' },
     { id: 'blessing', name: 'The Blessing (L\'hit\'atef)', text: '...אֲשֶׁר קִדְּשָׁנוּ בְּמִצְוֹתָיו וְצִוָּנוּ לְהִתְעַטֵּף בַּצִּיצִת', meaning: '...Who commanded us to wrap ourselves in Tzitzit' },
     { id: 'shiviti', name: 'Shiviti Hashem', text: 'שִׁוִּיתִי יְהוָה לְנֶגְדִּי תָמִיד', meaning: 'I have set the Lord always before me (Psalm 16:8)' },
     { id: 'etz_chaim', name: 'Etz Chaim (Tree of Life)', text: 'עֵץ־חַיִּים הִיא לַמַּחֲזִיקִים בָּהּ', meaning: 'It is a Tree of Life to those who hold fast to it (Proverbs 3:18)' },
@@ -104,7 +104,7 @@ let tcCanvas, tcCtx, tcZoneUsage, tcStripeStack, tcColorPicker, tcAtaraSelector,
 
 export function initTallitConfigurator() {
     try {
-        console.log("Initializing Tallit Configurator (Integration Mode)...");
+        console.log("Initializing Tallit Configurator (Integration Mode v2.1)...");
 
         // Bind DOM
         tcCanvas = document.getElementById('tc-canvas');
@@ -603,7 +603,7 @@ function renderTCControls() {
                  tabindex="0"
                  style="min-width: 220px;">
                 <div class="tz-image" style="display:flex; align-items:center; justify-content:center; height:80px; margin-bottom:0.5rem; background:#f5f5f5; border-radius:4px;">
-                     <span style="font-family:serif; font-size:1.4rem; color:#000; direction:rtl; padding:0.5rem;">${s.text || 'None'}</span>
+                     <span style="font-family:serif; font-size:1.4rem; color:${s.text ? '#000' : '#ccc'}; direction:${s.text ? 'rtl' : 'ltr'}; padding:0.5rem;">${s.text || 'No Atara'}</span>
                 </div>
                 <h4>${s.name}</h4>
                 <p style="font-size:0.75rem; color:#666;">${s.meaning}</p>
@@ -629,10 +629,8 @@ function renderTCControls() {
                 <div class="tz-image">
                     ${hasImg ?
                     `<img src="${t.image}" alt="${t.id}" loading="lazy" 
-                              onclick="window.openLightbox(event, '${t.image}', '${t.name.replace(/'/g, "\\'")}')" 
-                              title="Click to Zoom"
-                              style="cursor: zoom-in;">`
-                    : `<div style="height:60px; display:flex; align-items:center; justify-content:center; color:#666;">No Image</div>`}
+                              style="cursor: default;">`
+                    : `<div style="height:120px; display:flex; align-items:center; justify-content:center; background:#f5f5f5; border-radius:4px; color:#999; font-style:italic;">${t.name}</div>`}
                 </div>
                 <h4>${t.name}</h4>
                 <p>${t.description}</p>
@@ -759,6 +757,7 @@ function updateBuilderVisibility() {
                 const continuePrompt = document.getElementById('stripeContinuePrompt');
                 if (continuePrompt) continuePrompt.remove();
 
+                // Reveal next sections: Tzitzit (Step 3), Atara (Step 4), Save, Instructions
                 // Reveal next sections: Tzitzit (Step 3), Atara (Step 4), Save
                 ['tzitzit-selection-area', 'atara-selection-area', 'final-options-area'].forEach(id => {
                     const el = document.getElementById(id);
@@ -1002,7 +1001,12 @@ function reattachControlListeners() {
 
                 renderTCControls();
                 renderTCCanvas();
+                renderTCControls();
+                renderTCCanvas();
                 updateTCSummary();
+
+                // Move Canvas to Bottom
+                moveCanvasToBottom();
 
                 // TRANSITION TO FINAL STEP
                 updateMobileStep('final');
@@ -1177,6 +1181,7 @@ function resetTCDesign() {
     }
 
     // 3. Re-Render
+    moveCanvasToTop();
     renderTCCanvas();
     renderTCControls();
     updateTCSummary();
@@ -1411,7 +1416,7 @@ function updateMobileStep(step) {
     const tzitzitArea = document.getElementById('tzitzit-selection-area');
     const ataraArea = document.getElementById('atara-selection-area');
     const finalArea = document.getElementById('final-options-area');
-    const detailsArea = document.querySelector('.blueprint-details');
+
 
     // Function to safely set display
     const setDisplay = (el, val) => { if (el) el.style.display = val; };
@@ -1421,27 +1426,15 @@ function updateMobileStep(step) {
         setDisplay(tzitzitArea, 'none');
         setDisplay(ataraArea, 'none');
         setDisplay(finalArea, 'none');
-        setDisplay(detailsArea, 'none'); // HIDE INSTRUCTIONS
+
     } else if (step === 'tzitzit') {
-        setDisplay(stripeArea, 'none'); // Hide Stripes
         setDisplay(tzitzitArea, 'block');
-        setDisplay(ataraArea, 'none');
-        setDisplay(finalArea, 'none');
-        setDisplay(detailsArea, 'none');
         tzitzitArea?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } else if (step === 'atara') {
-        setDisplay(stripeArea, 'none');
-        setDisplay(tzitzitArea, 'none'); // Hide Tzitzit to save space
         setDisplay(ataraArea, 'block');
-        setDisplay(finalArea, 'none');
-        setDisplay(detailsArea, 'none');
         ataraArea?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } else if (step === 'final') {
-        setDisplay(stripeArea, 'none');
-        setDisplay(tzitzitArea, 'none');
-        setDisplay(ataraArea, 'none'); // Hide Atara
         setDisplay(finalArea, 'block');
-        setDisplay(detailsArea, 'block'); // SHOW INSTRUCTIONS FINALLY
         finalArea?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 }
@@ -1617,6 +1610,11 @@ function restoreDesignState(data) {
             document.getElementById('atara-selection-area').style.display = 'block';
         }
         document.getElementById('final-options-area').style.display = 'block';
+
+        // Move Canvas if complete
+        if (tcState.ataraStyle && tcState.ataraStyle.id !== 'none') {
+            moveCanvasToBottom();
+        }
     }
 
     alert("Design Loaded!");
@@ -1662,3 +1660,32 @@ window.closeLightbox = function () {
         setTimeout(() => lightbox.style.display = 'none', 300);
     }
 };
+// --- Canvas Location Helpers ---
+function moveCanvasToBottom() {
+    const canvasArea = document.querySelector('.canvas-area');
+    const finalArea = document.getElementById('final-options-area');
+    // Ensure we move it to the main container scope, after Atara selection area or before final options
+    if (canvasArea && finalArea) {
+        // Insert before final options (so it is below Atara)
+        if (finalArea.parentNode) {
+            finalArea.parentNode.insertBefore(canvasArea, finalArea);
+            // Add a class or style to ensure it looks good FULL WIDTH
+            canvasArea.style.width = '100%';
+            canvasArea.style.marginBottom = '2rem';
+        }
+    }
+}
+
+function moveCanvasToTop() {
+    const canvasArea = document.querySelector('.canvas-area');
+    const designerContainer = document.querySelector('.designer-container');
+    if (canvasArea && designerContainer) {
+        // If it is not already in designerContainer
+        if (canvasArea.parentElement !== designerContainer) {
+            designerContainer.prepend(canvasArea);
+            // Reset styles
+            canvasArea.style.width = '';
+            canvasArea.style.marginBottom = '';
+        }
+    }
+}

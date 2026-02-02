@@ -259,18 +259,18 @@
 /* Color Picker - Horizontal Scroll Global */
 #tallit-configurator-section .color-picker {
     display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    gap: 12px;
+    flex-wrap: wrap;
+    /* Changed to Wrap */
+    overflow-x: visible;
+    gap: 8px;
+    /* Slightly tighter gap for grid look */
     margin-top: 10px;
     padding-bottom: 10px;
-    scrollbar-width: none;
-    /* Firefox */
+    justify-content: flex-start;
 }
 
 #tallit-configurator-section .color-picker::-webkit-scrollbar {
     display: none;
-    /* Chrome/Safari */
 }
 
 #tallit-configurator-section .color-swatch {
@@ -538,10 +538,16 @@
     animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-to {
-    transform: scale(1);
-    opacity: 1;
-}
+@keyframes scaleUp {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 /* --- Responsive Adjustments (Added v2) --- */
@@ -561,7 +567,6 @@ to {
     }
 
     /* Horizontal Scrollers */
-    #tallit-configurator-section .color-picker,
     #tallit-configurator-section .control-row,
     #tallit-configurator-section .horizontal-gallery {
         display: flex;
@@ -574,7 +579,15 @@ to {
         -webkit-overflow-scrolling: touch;
     }
 
-    #tallit-configurator-section .color-picker::-webkit-scrollbar,
+    /* Force Color Picker to Wrap even on Mobile */
+    #tallit-configurator-section .color-picker {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+        gap: 10px;
+        overflow-x: visible;
+    }
+
     #tallit-configurator-section .control-row::-webkit-scrollbar,
     #tallit-configurator-section .horizontal-gallery::-webkit-scrollbar {
         display: none;
@@ -603,8 +616,5 @@ to {
     }
 
     /* Hide static base color */
-    .control-group h3:contains("Base Color"),
-    .control-group:has(h3:contains("Base Color")) {
-        /* Optional: Hide if desired, or keep as compact */
-    }
+
 }
